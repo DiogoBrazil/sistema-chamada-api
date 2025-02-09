@@ -1,4 +1,3 @@
-// src/sockets/index.ts
 import { Server } from 'socket.io';
 
 let ioInstance: Server;

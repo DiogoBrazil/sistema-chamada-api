@@ -4,7 +4,6 @@ import { getIO } from '../sockets';
 
 const prisma = new PrismaClient();
 
-// Cria um atendimento (agenda o atendimento do paciente)
 export const createAtendimento = async (
   req: Request,
   res: Response,
@@ -12,7 +11,6 @@ export const createAtendimento = async (
 ): Promise<void> => {
   try {
     const { patientId } = req.body;
-    // Verifica se o paciente existe
     const patient = await prisma.patient.findUnique({ where: { id: patientId } });
     if (!patient) {
       res.status(404).json({ error: 'Paciente não encontrado' });
@@ -73,7 +71,7 @@ export const callPatient = async (
   }
 };
 
-// Finaliza o atendimento (atualiza para FINALIZADO)
+// Finaliza o atendimento (atualiza para FINALIZADO) e registra informações do médico
 export const finishAtendimento = async (
   req: Request,
   res: Response,
@@ -81,9 +79,26 @@ export const finishAtendimento = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+    const { professionalId } = req.body; // ID do profissional que encerra o atendimento
+
+    // Verifica se o profissional existe e obtém seu consultório atual
+    const professional = await prisma.professional.findUnique({
+      where: { id: professionalId }
+    });
+    if (!professional) {
+      res.status(404).json({ error: 'Profissional não encontrado' });
+      return;
+    }
+    const consultorio = professional.currentConsultorio;
+
     const atendimento = await prisma.atendimento.update({
       where: { id: parseInt(id, 10) },
-      data: { status: AtendimentoStatus.FINALIZADO }
+      data: {
+        status: AtendimentoStatus.FINALIZADO,
+        professional: { connect: { id: professionalId } },
+        consultorio: consultorio,
+        finishedAt: new Date()
+      }
     });
     res.json(atendimento);
   } catch (error) {

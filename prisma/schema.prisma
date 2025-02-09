@@ -22,18 +22,25 @@ model Patient {
 }
 
 model Professional {
-  id       Int    @id @default(autoincrement())
-  fullName String
-  cpf      String @unique
-  profile  String
+  id                 Int            @id @default(autoincrement())
+  fullName           String
+  cpf                String         @unique
+  profile            String
+  password           String
+  currentConsultorio Int?           
+  atendimentos       Atendimento[]
 }
 
 model Atendimento {
-  id        Int              @id @default(autoincrement())
-  patient   Patient          @relation(fields: [patientId], references: [id])
-  patientId Int
-  status    AtendimentoStatus @default(AGUARDANDO)
-  createdAt DateTime         @default(now())
+  id             Int              @id @default(autoincrement())
+  patient        Patient          @relation(fields: [patientId], references: [id])
+  patientId      Int
+  status         AtendimentoStatus @default(AGUARDANDO)
+  createdAt      DateTime         @default(now())
+  finishedAt     DateTime?        
+  professional   Professional?    @relation(fields: [professionalId], references: [id])
+  professionalId Int?
+  consultorio    Int?             
 }
 
 enum AtendimentoStatus {
