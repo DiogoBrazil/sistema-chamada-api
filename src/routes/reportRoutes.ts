@@ -1,11 +1,12 @@
-import { Router } from 'express';
-import { getAtendimentosReport } from '../controllers/reportController';
+import { Router } from "express";
+import { ReportController } from "../controllers/ReportController";
 
 const router = Router();
+const reportController = new ReportController();
 
 router.get(
-    '/atendimentos/:professionalId/:startDate/:startTime/:endDate/:endTime',
-    getAtendimentosReport
-  );
-  
+  "/attendances/:professionalId/:startDate/:startTime/:endDate/:endTime",
+  (req, res, next) => reportController.getAttendanceReport(req, res, next)
+);
+
 export default router;

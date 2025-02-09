@@ -1,141 +1,140 @@
-# Sistema de Chamada API
+# Patient Call System API
 
-Esta é a API do Sistema de Chamada, construída com Node.js, Express, Prisma, PostgreSQL e Socket.IO.  
-A API gerencia pacientes, profissionais, atendimentos e oferece funcionalidades de autenticação, real-time (via Socket.IO) e geração de relatórios.
+This API is built with Node.js, Express, Prisma, PostgreSQL, Socket.IO, and Inversify (for dependency injection).  
+It implements a layered architecture with controllers, use cases, repositories, and interfaces.  
+The API provides functionality for managing professionals, patients, attendances (appointments), authentication (with JWT), reporting, and real-time communication via Socket.IO.
 
 ## Features
 
-- Cadastro e consulta de pacientes.
-- Cadastro de profissionais com validação de perfil (somente "MEDICO" ou "RECEPCIONISTA") e senha criptografada com Argon2.
-- Autenticação de profissionais.
-- Atualização dinâmica do número do consultório (campo `currentConsultorio`) para profissionais com perfil "MEDICO".
-- Fluxo de atendimentos:
-  - Criação do atendimento (agendamento).
-  - Chamada do paciente (altera status para `EM_ATENDIMENTO` e emite evento via Socket.IO).
-  - Encerramento do atendimento (registra profissional, consultório e data/hora de encerramento).
-- Relatórios de atendimentos finalizados com filtros por data e hora.
-- Comunicação em tempo real via Socket.IO para atualização do painel de chamadas.
+- **Professional Management:**  
+  - Create professionals with validation (only "DOCTOR" or "RECEPTIONIST" allowed).  
+  - List professionals.  
+  - Get professional details.  
+  - Login with JWT token generation.  
+  - Set professional's office.
 
-## Autor
+- **Patient Management:**  
+  - Create patients.  
+  - List patients.  
+  - Get patient details.
 
-[DiogoBrazil](https://github.com/DiogoBrazil)
+- **Attendance Management:**  
+  - Create an attendance (appointment).  
+  - List current attendances (statuses: `PENDING` or `IN_PROGRESS`).  
+  - Call a patient (set attendance status to `IN_PROGRESS` and emit a socket event).  
+  - Finish an attendance (record professional, office, and finish time).  
+  - Generate attendance reports based on a date/time interval.
 
-## Requisitos
+- **Authentication:**  
+  - Login returns a JWT token, along with user data (`fullName`, `cpf`, `profile`) and an expiration date.  
+  - Set office information after login.
 
-- Node.js (>=14)
-- npm
-- Docker (para rodar o PostgreSQL via Docker Compose)
-- PostgreSQL (será provisionado via Docker)
+- **Real-Time Communication:**  
+  - Socket.IO integration to notify a front-end (e.g., a call panel) when a patient is called.
 
-## Instalação
+## Folder Structure
 
-1. **Clone o repositório:**
+```
+backend/
+├── package.json
+├── tsconfig.json
+├── .env
+├── docker-compose.yml
+├── prisma/
+│   └── schema.prisma
+└── src/
+    ├── container.ts
+    ├── types.ts
+    ├── app.ts
+    ├── server.ts
+    ├── interfaces/
+    │   ├── professional/
+    │   │   └── ICreateProfessionalDTO.ts
+    │   ├── patient/
+    │   │   └── ICreatePatientDTO.ts
+    │   └── attendance/
+    │       └── IGetAttendanceReportDTO.ts
+    ├── repositories/
+    │   ├── ProfessionalRepository.ts
+    │   ├── PatientRepository.ts
+    │   └── AttendanceRepository.ts
+    ├── useCases/
+    │   ├── professional/
+    │   │   ├── CreateProfessionalUseCase.ts
+    │   │   ├── GetProfessionalsUseCase.ts
+    │   │   ├── GetProfessionalByIdUseCase.ts
+    │   │   ├── LoginProfessionalUseCase.ts
+    │   │   └── SetOfficeUseCase.ts
+    │   ├── patient/
+    │   │   ├── CreatePatientUseCase.ts
+    │   │   ├── GetPatientsUseCase.ts
+    │   │   └── GetPatientByIdUseCase.ts
+    │   └── attendance/
+    │       ├── CreateAttendanceUseCase.ts
+    │       ├── GetAttendancesUseCase.ts
+    │       ├── CallPatientUseCase.ts
+    │       ├── FinishAttendanceUseCase.ts
+    │       └── GetAttendanceReportUseCase.ts
+    ├── controllers/
+    │   ├── ProfessionalController.ts
+    │   ├── PatientController.ts
+    │   ├── AttendanceController.ts
+    │   ├── AuthController.ts
+    │   └── ReportController.ts
+    ├── routes/
+    │   ├── professionalRoutes.ts
+    │   ├── patientRoutes.ts
+    │   ├── attendanceRoutes.ts
+    │   ├── authRoutes.ts
+    │   └── reportRoutes.ts
+    └── sockets/
+        └── index.ts
+```
 
-   ```bash
-   git clone https://github.com/DiogoBrazil/sistema-chamada-api.git
-   cd sistema-chamada-api
-   ```
+## Requirements
 
-2. **Instale as dependências:**
+- **Node.js** (>=14)
+- **npm**
+- **Docker** (for running PostgreSQL via Docker Compose) or a local PostgreSQL installation
+- Environment variables: `DATABASE_URL`, `JWT_SECRET`, `PORT`
 
-   ```bash
-   npm install
-   ```
+## Setup
 
-3. **Configure as variáveis de ambiente:**
+### 1. Clone the repository
 
-   Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo (ajuste conforme necessário):
+```bash
+git clone https://github.com/DiogoBrazil/sistema-chamada-api.git
+cd sistema-chamada-api
+```
 
-   ```env
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mydb?schema=public"
-   PORT=5000
-   ```
+### 2. Install dependencies
 
-4. **Configuração do Banco de Dados**
+```bash
+npm install
+```
 
-   O projeto utiliza o PostgreSQL, que pode ser executado via Docker Compose.
+### 3. Configure Environment Variables
 
-   Inicie o container do PostgreSQL:
+Create a `.env` file in the root with content similar to:
 
-   ```bash
-   docker-compose up -d
-   ```
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mydb?schema=public"
+JWT_SECRET=your_very_secret_key
+PORT=5000
+```
 
-   Execute as migrations e gere o client do Prisma:
+### 4. Database Setup with Prisma
 
-   ```bash
-   npx prisma migrate dev --name init
-   npx prisma generate
-   ```
+Run the migrations and generate the Prisma client:
 
-5. **Executando a Aplicação**
+```bash
+npx prisma migrate dev --name update_schema_english
+npx prisma generate
+```
 
-   Inicie o servidor em modo de desenvolvimento:
+### 5. Start PostgreSQL via Docker (Optional)
 
-   ```bash
-   npm run dev
-   ```
-
-   A API ficará disponível em `http://localhost:5000`.
-
-## Endpoints da API
-
-### Pacientes
-
-- **POST** `/api/patients` - Cadastra um novo paciente.
-- **GET** `/api/patients` - Lista todos os pacientes.
-- **GET** `/api/patients/:id` - Retorna os detalhes de um paciente pelo ID.
-
-### Profissionais
-
-- **POST** `/api/professionals` - Cadastra um novo profissional.
-  - O campo `profile` só aceita os valores `"MEDICO"` ou `"RECEPCIONISTA"`.
-  - A senha (`password`) é criptografada com Argon2.
-- **GET** `/api/professionals` - Lista todos os profissionais (removendo o campo `password` da resposta).
-- **GET** `/api/professionals/:id` - Retorna os detalhes de um profissional pelo ID (sem o campo `password`).
-
-### Autenticação
-
-- **POST** `/api/auth/login` - Realiza o login do profissional.
-  - Parâmetros: `cpf`, `password`.
-- **POST** `/api/auth/set-consultorio` - Permite que o profissional (médico) informe ou atualize o consultório onde irá atender.
-
-   ```json
-   {
-     "professionalId": 1,
-     "consultorio": 2
-   }
-   ```
-
-### Atendimentos
-
-- **POST** `/api/atendimentos` - Agenda um atendimento para um paciente.
-- **GET** `/api/atendimentos` - Lista os atendimentos com status `AGUARDANDO` ou `EM_ATENDIMENTO`.
-- **POST** `/api/atendimentos/:id/chamar` - Altera o status do atendimento para `EM_ATENDIMENTO` e emite evento via Socket.IO para chamar o paciente.
-- **POST** `/api/atendimentos/:id/encerrar` - Finaliza o atendimento.
-
-   ```json
-   {
-     "professionalId": 1
-   }
-   ```
-
-### Relatórios
-
-- **GET** `/api/reports/atendimentos/:professionalId/:startDate/:startTime/:endDate/:endTime`  
-  Retorna o relatório de atendimentos finalizados para um determinado profissional.
-
-  **Exemplo de URL:**  
-  `http://localhost:5000/api/reports/atendimentos/1/2025-02-01/08:00:00/2025-02-01/18:00:00`
-
-## Comunicação em Tempo Real
-
-A API utiliza **Socket.IO** para comunicação em tempo real.  
-Quando um paciente é chamado (através do endpoint `/api/atendimentos/:id/chamar`), um evento `callPatient` é emitido.
-
-## Docker Compose
-
-Se precisar utilizar **Docker Compose** para o PostgreSQL, adicione um arquivo `docker-compose.yml`:
+If using Docker, create a `docker-compose.yml` file with:
 
 ```yaml
 services:
@@ -150,41 +149,95 @@ services:
       - "5432:5432"
 ```
 
-Inicie o container:
+Then start it:
 
 ```bash
 docker-compose up -d
 ```
 
-## Estrutura do Projeto
+### 6. Start the Server
 
-```
-sistema-chamada-api/
-├── prisma/
-│   └── schema.prisma
-├── src/
-│   ├── controllers/
-│   │   ├── atendimentoController.ts
-│   │   ├── authController.ts
-│   │   ├── patientController.ts
-│   │   ├── professionalController.ts
-│   │   └── reportController.ts
-│   ├── routes/
-│   │   ├── atendimentoRoutes.ts
-│   │   ├── authRoutes.ts
-│   │   ├── patientRoutes.ts
-│   │   ├── professionalRoutes.ts
-│   │   └── reportRoutes.ts
-│   ├── sockets/
-│   │   └── index.ts
-│   ├── app.ts
-│   └── server.ts
-├── .env
-├── docker-compose.yml
-├── package.json
-└── README.md
+```bash
+npm run dev
 ```
 
----
+The API will be available at `http://localhost:5000`.
+
+## Endpoints
+
+### Professionals
+
+- **POST** `/api/professionals` - Create a new professional.
+- **GET** `/api/professionals` - List all professionals.
+- **GET** `/api/professionals/:id` - Get professional details by ID.
+
+### Patients
+
+- **POST** `/api/patients` - Create a new patient.
+- **GET** `/api/patients` - List all patients.
+- **GET** `/api/patients/:id` - Get patient details by ID.
+
+### Attendances
+
+- **POST** `/api/attendances` - Create a new attendance (appointment) for a patient.
+- **GET** `/api/attendances` - List attendances with status `PENDING` or `IN_PROGRESS`.
+- **POST** `/api/attendances/:id/call` - Mark an attendance as `IN_PROGRESS` and emit a socket event.
+- **POST** `/api/attendances/:id/finish` - Finish an attendance.
+
+### Authentication
+
+- **POST** `/api/auth/login` - Login a professional.
+- **POST** `/api/auth/set-office` - Set or update the professional's office.
+
+### Reports
+
+- **GET** `/api/reports/attendances/:professionalId/:startDate/:startTime/:endDate/:endTime`  
+  Generate a report of finished attendances for a professional within a date/time interval.
+
+## Socket.IO Integration
+
+The API uses **Socket.IO** for real-time notifications.  
+When an attendance is marked as "call" (using `/api/attendances/:id/call`), an event is emitted.
+
+## TypeScript Configuration
+
+The `tsconfig.json` is configured to support decorators (required by Inversify):
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
+```
+
+## Running the Application
+
+Ensure your PostgreSQL database is running (via Docker or locally).  
+Run the Prisma migrations:
+
+```bash
+npx prisma migrate dev --name update_schema_english
+npx prisma generate
+```
+
+Start the server:
+
+```bash
+npm run dev
+```
+
+## License
+
+MIT
+
+## Author
 
 🚀 **Desenvolvido por [DiogoBrazil](https://github.com/DiogoBrazil)**  

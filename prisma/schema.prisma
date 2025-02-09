@@ -13,38 +13,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model Patient {
-  id           Int           @id @default(autoincrement())
+  id           Int         @id @default(autoincrement())
   fullName     String
-  cpf          String        @unique
+  cpf          String      @unique
   birthDate    String
-  atendimentos Atendimento[]
+  attendances  Attendance[]
 }
 
 model Professional {
-  id                 Int            @id @default(autoincrement())
-  fullName           String
-  cpf                String         @unique
-  profile            String
-  password           String
-  currentConsultorio Int?           
-  atendimentos       Atendimento[]
+  id                Int         @id @default(autoincrement())
+  fullName          String
+  cpf               String      @unique
+  profile           String
+  password          String
+  currentOffice     Int?       
+  attendances       Attendance[]
 }
 
-model Atendimento {
-  id             Int              @id @default(autoincrement())
-  patient        Patient          @relation(fields: [patientId], references: [id])
-  patientId      Int
-  status         AtendimentoStatus @default(AGUARDANDO)
-  createdAt      DateTime         @default(now())
-  finishedAt     DateTime?        
-  professional   Professional?    @relation(fields: [professionalId], references: [id])
-  professionalId Int?
-  consultorio    Int?             
+model Attendance {
+  id              Int               @id @default(autoincrement())
+  patient         Patient           @relation(fields: [patientId], references: [id])
+  patientId       Int
+  status          AttendanceStatus  @default(PENDING)
+  createdAt       DateTime          @default(now())
+  finishedAt      DateTime?
+  professional    Professional?     @relation(fields: [professionalId], references: [id])
+  professionalId  Int?
+  officeNumber    Int?
 }
 
-enum AtendimentoStatus {
-  AGUARDANDO
-  EM_ATENDIMENTO
-  FINALIZADO
+enum AttendanceStatus {
+  PENDING
+  IN_PROGRESS
+  FINISHED
 }
