@@ -30,9 +30,10 @@ export class AttendanceController {
   
   async call(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const id = Number(req.params.id);
+      const userId = Number(req.params.id);
+      const officeNumber = Number(req.body.officeNumber);
       const useCase = container.get<CallPatientUseCase>(TYPES.CallPatientUseCase);
-      const result = await useCase.execute(id);
+      const result = await useCase.execute(userId, officeNumber);
       res.json(result);
     } catch (error) {
       next(error);

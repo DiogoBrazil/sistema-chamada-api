@@ -27,10 +27,13 @@ export class AttendanceRepository {
     });
   }
   
-  async callPatient(id: number): Promise<Attendance> {
+  async callPatient(id: number, officeNumber: number): Promise<Attendance> {
     return this.prisma.attendance.update({
       where: { id },
-      data: { status: AttendanceStatus.IN_PROGRESS },
+      data: { 
+        status: AttendanceStatus.IN_PROGRESS,
+        officeNumber,
+       },
       include: { patient: true },
     });
   }
