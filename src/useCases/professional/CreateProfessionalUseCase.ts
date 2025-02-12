@@ -16,9 +16,9 @@ export class CreateProfessionalUseCase {
   }
   
   async execute(data: ICreateProfessionalDTO): Promise<Omit<Professional, "password">> {
-    const allowedProfiles = ["DOCTOR", "RECEPTIONIST"];
+    const allowedProfiles = ["ADMINISTRATOR","DOCTOR", "RECEPTIONIST"];
     if (!allowedProfiles.includes(data.profile)) {
-      throw new Error("Invalid profile. Only 'DOCTOR' or 'RECEPTIONIST' are allowed.");
+      throw new Error("Invalid profile. Only 'ADMINISTRATOR' or 'DOCTOR' or 'RECEPTIONIST' are allowed.");
     }
     if (!data.password) {
       throw new Error("Password is required.");
