@@ -9,8 +9,20 @@ export class AuthController {
     try {
       const useCase = container.get<LoginProfessionalUseCase>(TYPES.LoginProfessionalUseCase);
       const result = await useCase.execute(req.body);
-      res.json(result);
+      res.status(200).json({
+        message: "Login successful",
+        data: result,
+        status_code: 200
+      });
     } catch (error) {
+      if (error instanceof Error) {
+        res.status(401).json({
+          message: error.message,
+          data: null,
+          status_code: 401
+        });
+        return;
+      }
       next(error);
     }
   }
@@ -20,8 +32,20 @@ export class AuthController {
       const { professionalId, office } = req.body;
       const useCase = container.get<SetOfficeUseCase>(TYPES.SetOfficeUseCase);
       const result = await useCase.execute(professionalId, office);
-      res.json(result);
+      res.status(200).json({
+        message: "Office set successfully",
+        data: result,
+        status_code: 200
+      });
     } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({
+          message: error.message,
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
       next(error);
     }
   }

@@ -12,7 +12,11 @@ export class AttendanceController {
       const { patientId } = req.body;
       const useCase = container.get<CreateAttendanceUseCase>(TYPES.CreateAttendanceUseCase);
       const result = await useCase.execute(patientId);
-      res.status(201).json(result);
+      res.status(201).json({
+        message: "Attendance created successfully",
+        data: result,
+        status_code: 201
+      });
     } catch (error) {
       next(error);
     }
@@ -22,7 +26,11 @@ export class AttendanceController {
     try {
       const useCase = container.get<GetAttendancesUseCase>(TYPES.GetAttendancesUseCase);
       const result = await useCase.execute();
-      res.json(result);
+      res.status(200).json({
+        message: "Attendances retrieved successfully",
+        data: result,
+        status_code: 200
+      });
     } catch (error) {
       next(error);
     }
@@ -34,7 +42,11 @@ export class AttendanceController {
       const officeNumber = Number(req.body.officeNumber);
       const useCase = container.get<CallPatientUseCase>(TYPES.CallPatientUseCase);
       const result = await useCase.execute(userId, officeNumber);
-      res.json(result);
+      res.status(200).json({
+        message: "Patient called successfully",
+        data: result,
+        status_code: 200
+      });
     } catch (error) {
       next(error);
     }
@@ -46,7 +58,11 @@ export class AttendanceController {
       const { professionalId } = req.body;
       const useCase = container.get<FinishAttendanceUseCase>(TYPES.FinishAttendanceUseCase);
       const result = await useCase.execute(id, professionalId);
-      res.json(result);
+      res.status(200).json({
+        message: "Attendance finished successfully",
+        data: result,
+        status_code: 200
+      });
     } catch (error) {
       next(error);
     }

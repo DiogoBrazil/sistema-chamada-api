@@ -20,5 +20,7 @@ export const TYPES = {
     SetOfficeUseCase: Symbol.for("SetOfficeUseCase"),
     
     GetAttendanceReportUseCase: Symbol.for("GetAttendanceReportUseCase"),
+    DeletePatientUseCase: Symbol.for("DeletePatientUseCase"),
+    UpdatePatientUseCase: Symbol.for("UpdatePatientUseCase"),
   };
   

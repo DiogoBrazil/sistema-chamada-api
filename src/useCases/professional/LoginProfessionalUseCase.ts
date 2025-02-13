@@ -20,7 +20,7 @@ export class LoginProfessionalUseCase {
     this.professionalRepository = professionalRepository;
   }
   
-  async execute(data: ILoginDTO): Promise<{ token: string; message: string; user: Omit<Professional, "password"> }> {
+  async execute(data: ILoginDTO): Promise<{ token: string; user: Omit<Professional, "password"> }> {
     if (!data.cpf || !data.password) {
       throw new Error("CPF and password are required.");
     }
@@ -51,6 +51,6 @@ export class LoginProfessionalUseCase {
       { expiresIn }
     );
     
-    return { token, message: "Login successful.", user: userData };
+    return { token, user: userData };
   }
 }

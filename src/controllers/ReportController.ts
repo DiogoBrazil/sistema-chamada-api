@@ -17,8 +17,20 @@ export class ReportController {
 
       const useCase = container.get<GetAttendanceReportUseCase>(TYPES.GetAttendanceReportUseCase);
       const result = await useCase.execute(data);
-      res.json(result);
+      res.status(200).json({
+        message: "Report generated successfully",
+        data: result,
+        status_code: 200
+      });
     } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({
+          message: error.message,
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
       next(error);
     }
   }

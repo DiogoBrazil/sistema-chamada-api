@@ -10,7 +10,11 @@ export class ProfessionalController {
     try {
       const useCase = container.get<CreateProfessionalUseCase>(TYPES.CreateProfessionalUseCase);
       const result = await useCase.execute(req.body);
-      res.status(201).json(result);
+      res.status(201).json({
+        message: "Professional created successfully",
+        data: result,
+        status_code: 201
+      });
     } catch (error) {
       next(error);
     }
@@ -20,7 +24,11 @@ export class ProfessionalController {
     try {
       const useCase = container.get<GetProfessionalsUseCase>(TYPES.GetProfessionalsUseCase);
       const result = await useCase.execute();
-      res.json(result);
+      res.status(200).json({
+        message: "Professionals retrieved successfully",
+        data: result,
+        status_code: 200
+      });
     } catch (error) {
       next(error);
     }
@@ -31,11 +39,21 @@ export class ProfessionalController {
       const id = Number(req.params.id);
       const useCase = container.get<GetProfessionalByIdUseCase>(TYPES.GetProfessionalByIdUseCase);
       const result = await useCase.execute(id);
+      
       if (!result) {
-        res.status(404).json({ error: "Professional not found" });
+        res.status(404).json({
+          message: "Professional not found",
+          data: null,
+          status_code: 404
+        });
         return;
       }
-      res.json(result);
+
+      res.status(200).json({
+        message: "Professional retrieved successfully",
+        data: result,
+        status_code: 200
+      });
     } catch (error) {
       next(error);
     }
