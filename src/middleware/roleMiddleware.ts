@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-type UserProfile = 'ADMIN' | 'DOCTOR' | 'RECEPTIONIST';
+type UserProfile = 'ADMINISTRATOR' | 'DOCTOR' | 'RECEPTIONIST';
 
 export const roleMiddleware = (allowedProfiles: UserProfile[]) => {
   return (req: Request, res: Response, next: NextFunction) => {

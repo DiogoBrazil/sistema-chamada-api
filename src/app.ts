@@ -27,7 +27,7 @@ app.use("/api/patients", patientRoutes);
 app.use("/api/attendances", attendanceRoutes);
 
 // Rota que exige perfil específico (apenas médicos e admins)
-app.use("/api/reports", roleMiddleware(['ADMIN', 'DOCTOR']), reportRoutes);
+app.use("/api/reports", roleMiddleware(['ADMINISTRATOR', 'DOCTOR']), reportRoutes);
 
 // Middleware global de tratamento de erros
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
