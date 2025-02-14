@@ -6,10 +6,14 @@ export const TYPES = {
     CreateProfessionalUseCase: Symbol.for("CreateProfessionalUseCase"),
     GetProfessionalsUseCase: Symbol.for("GetProfessionalsUseCase"),
     GetProfessionalByIdUseCase: Symbol.for("GetProfessionalByIdUseCase"),
+    DeletePatientUseCase: Symbol.for("DeletePatientUseCase"),
+    UpdatePatientUseCase: Symbol.for("UpdatePatientUseCase"),
     
     CreatePatientUseCase: Symbol.for("CreatePatientUseCase"),
     GetPatientsUseCase: Symbol.for("GetPatientsUseCase"),
     GetPatientByIdUseCase: Symbol.for("GetPatientByIdUseCase"),
+    DeleteProfessionalUseCase: Symbol.for("DeleteProfessionalUseCase"),
+    UpdateProfessionalUseCase: Symbol.for("UpdateProfessionalUseCase"),
     
     CreateAttendanceUseCase: Symbol.for("CreateAttendanceUseCase"),
     GetAttendancesUseCase: Symbol.for("GetAttendancesUseCase"),
@@ -20,7 +24,5 @@ export const TYPES = {
     SetOfficeUseCase: Symbol.for("SetOfficeUseCase"),
     
     GetAttendanceReportUseCase: Symbol.for("GetAttendanceReportUseCase"),
-    DeletePatientUseCase: Symbol.for("DeletePatientUseCase"),
-    UpdatePatientUseCase: Symbol.for("UpdatePatientUseCase"),
   };
   

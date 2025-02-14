@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import { PrismaClient, Professional } from "@prisma/client";
+import { PrismaClient, Professional, AttendanceStatus } from "@prisma/client";
 
 @injectable()
 export class ProfessionalRepository {
@@ -35,5 +35,36 @@ export class ProfessionalRepository {
   
   async getProfessionalByCpf(cpf: string): Promise<Professional | null> {
     return this.prisma.professional.findUnique({ where: { cpf } });
+  }
+
+  async deleteProfessional(id: number): Promise<void> {
+    await this.prisma.professional.delete({
+      where: { id }
+    });
+  }
+
+  async updateProfessional(id: number, data: {
+    fullName?: string;
+    cpf?: string;
+    profile?: string;
+    password?: string;
+    currentOffice?: number | null;
+  }): Promise<Professional> {
+    return this.prisma.professional.update({
+      where: { id },
+      data
+    });
+  }
+
+  async hasActiveAttendances(id: number): Promise<boolean> {
+    const attendance = await this.prisma.attendance.findFirst({
+      where: {
+        professionalId: id,
+        status: {
+          in: [AttendanceStatus.PENDING, AttendanceStatus.IN_PROGRESS]
+        }
+      }
+    });
+    return !!attendance;
   }
 }

@@ -24,6 +24,18 @@ export class AttendanceController {
   
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      // Verifica se o usuário é admin
+      const userProfile = req.user?.profile;
+      if (userProfile !== 'ADMINISTRATOR' && userProfile !== 'DOCTOR') {
+        res.status(403).json({
+          message: "Only administrators or Doctors can get attendances",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
+
       const useCase = container.get<GetAttendancesUseCase>(TYPES.GetAttendancesUseCase);
       const result = await useCase.execute();
       res.status(200).json({
@@ -38,6 +50,18 @@ export class AttendanceController {
   
   async call(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+
+       // Verifica se o usuário é admin
+       const userProfile = req.user?.profile;
+       if (userProfile !== 'ADMINISTRATOR' && userProfile !== 'DOCTOR') {
+         res.status(403).json({
+           message: "Only administrators or Doctors can call attendances",
+           data: null,
+           status_code: 403
+         });
+         return;
+       }
+ 
       const userId = Number(req.params.id);
       const officeNumber = Number(req.body.officeNumber);
       const useCase = container.get<CallPatientUseCase>(TYPES.CallPatientUseCase);
@@ -54,6 +78,17 @@ export class AttendanceController {
   
   async finish(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+       // Verifica se o usuário é admin
+       const userProfile = req.user?.profile;
+       if (userProfile !== 'ADMINISTRATOR' && userProfile !== 'DOCTOR') {
+         res.status(403).json({
+           message: "Only administrators or Doctors can finish attendances",
+           data: null,
+           status_code: 403
+         });
+         return;
+       }
+ 
       const id = Number(req.params.id);
       const { professionalId } = req.body;
       const useCase = container.get<FinishAttendanceUseCase>(TYPES.FinishAttendanceUseCase);

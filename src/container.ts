@@ -11,6 +11,8 @@ import { AttendanceRepository } from "./repositories/AttendanceRepository";
 import { CreateProfessionalUseCase } from "./useCases/professional/CreateProfessionalUseCase";
 import { GetProfessionalsUseCase } from "./useCases/professional/GetProfessionalsUseCase";
 import { GetProfessionalByIdUseCase } from "./useCases/professional/GetProfessionalByIdUseCase";
+import { DeleteProfessionalUseCase } from "./useCases/professional/DeleteProfessionalByIdUseCase";
+import { UpdateProfessionalUseCase } from "./useCases/professional/UpdateProfessionalByIdUseCase";
 
 // Use cases (patient)
 import { CreatePatientUseCase } from "./useCases/patient/CreatePatientUseCase";
@@ -43,6 +45,8 @@ container.bind(TYPES.GetProfessionalsUseCase).to(GetProfessionalsUseCase);
 container.bind(TYPES.GetProfessionalByIdUseCase).to(GetProfessionalByIdUseCase);
 container.bind(TYPES.LoginProfessionalUseCase).to(LoginProfessionalUseCase);
 container.bind(TYPES.SetOfficeUseCase).to(SetOfficeUseCase);
+container.bind(TYPES.DeleteProfessionalUseCase).to(DeleteProfessionalUseCase);
+container.bind(TYPES.UpdateProfessionalUseCase).to(UpdateProfessionalUseCase);
 
 // Use case bindings (patient)
 container.bind(TYPES.CreatePatientUseCase).to(CreatePatientUseCase);
