@@ -39,7 +39,7 @@ export class LoginProfessionalUseCase {
     
     
     const secret = process.env.JWT_SECRET || "defaultsecret";
-    const expiresIn = "1h";
+    const expiresIn = "24h";
     
     const token = jwt.sign(
       {
