@@ -1,9 +1,11 @@
 import { injectable } from "inversify";
 import { PrismaClient, Patient, AttendanceStatus } from "@prisma/client";
+import { IPaginatedResult } from "../interfaces/patient/IPaginatedResult";
 
 @injectable()
 export class PatientRepository {
   private prisma: PrismaClient;
+  private readonly itemsPerPage = 5;
   
   constructor() {
     this.prisma = new PrismaClient();
@@ -17,8 +19,29 @@ export class PatientRepository {
     return this.prisma.patient.create({ data });
   }
   
-  async getPatients(): Promise<Patient[]> {
-    return this.prisma.patient.findMany();
+  async getPatients(page: number): Promise<IPaginatedResult<Patient>> {
+    const skip = (page - 1) * this.itemsPerPage;
+    
+    // Busca dados paginados e total de registros em paralelo
+    const [patients, totalItems] = await Promise.all([
+      this.prisma.patient.findMany({
+        skip,
+        take: this.itemsPerPage,
+        orderBy: {
+          fullName: 'asc'
+        }
+      }),
+      this.prisma.patient.count()
+    ]);
+
+    const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+
+    return {
+      data: patients,
+      totalPages,
+      currentPage: page,
+      totalItems
+    };
   }
   
   async getPatientById(id: number): Promise<Patient | null> {
@@ -54,6 +77,17 @@ export class PatientRepository {
 
     return this.prisma.patient.delete({
       where: { id }
+    });
+  }
+
+  async getPatientsByName(name: string): Promise<Patient[]> {
+    return this.prisma.patient.findMany({
+      where: {
+        fullName: {
+          contains: name,
+          mode: 'insensitive'
+        }
+      }
     });
   }
 

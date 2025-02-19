@@ -6,6 +6,8 @@ import { GetPatientsUseCase } from "../useCases/patient/GetPatientsUseCase";
 import { GetPatientByIdUseCase } from "../useCases/patient/GetPatientByIdUseCase";
 import { DeletePatientUseCase } from "../useCases/patient/DeletePatientUseCase";
 import { UpdatePatientUseCase } from "../useCases/patient/UpdatePatientUseCase";
+import { GetPatientByCpfUseCase } from "../useCases/patient/GetPatientByCpfUseCase";
+import { GetPatientsByNameUseCase } from "../useCases/patient/GetPatientsByNameUseCase";
 
 export class PatientController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -24,11 +26,18 @@ export class PatientController {
 
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const page = parseInt(req.params.page) || 1;
       const useCase = container.get<GetPatientsUseCase>(TYPES.GetPatientsUseCase);
-      const result = await useCase.execute();
+      const result = await useCase.execute(page);
+      
       res.status(200).json({
         message: "Patients retrieved successfully",
-        data: result,
+        data: result.data,
+        pagination: {
+          currentPage: result.currentPage,
+          totalPages: result.totalPages,
+          totalItems: result.totalItems
+        },
         status_code: 200
       });
     } catch (error) {
@@ -60,6 +69,44 @@ export class PatientController {
       next(error);
     }
   }
+
+
+  async getByCpf(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const cpf = req.params.cpf;
+      const useCase = container.get<GetPatientByCpfUseCase>(TYPES.GetPatientByCpfUseCase);
+      const result = await useCase.execute(cpf);
+      
+      if (!result) {
+        res.status(404).json({ error: "Patient not found" });
+        return;
+      }
+      
+      res.status(200).json({
+        message: "Patient retrieved successfully",
+        data: result,
+        status_code: 200
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getByName(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const name = req.params.name;
+      const useCase = container.get<GetPatientsByNameUseCase>(TYPES.GetPatientByNamesUseCase);
+      const result = await useCase.execute(name);
+      res.status(200).json({
+        message: "Patients retrieved successfully",
+        data: result,
+        status_code: 200
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
 
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

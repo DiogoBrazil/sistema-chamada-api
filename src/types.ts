@@ -14,6 +14,8 @@ export const TYPES = {
     CreatePatientUseCase: Symbol.for("CreatePatientUseCase"),
     GetPatientsUseCase: Symbol.for("GetPatientsUseCase"),
     GetPatientByIdUseCase: Symbol.for("GetPatientByIdUseCase"),
+    GetPatientByCpfUseCase: Symbol.for("GetPatientByCpfUseCase"),
+    GetPatientByNamesUseCase: Symbol.for("GetPatientByNamesUseCase"),
     DeletePatientUseCase: Symbol.for("DeletePatientUseCase"),
     UpdatePatientUseCase: Symbol.for("UpdatePatientUseCase"),
     
