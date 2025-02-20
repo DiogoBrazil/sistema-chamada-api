@@ -16,7 +16,7 @@ export class InitializeAdminUseCase {
   
   async execute(): Promise<void> {
     // Verifica se já existe um administrador
-    const professionals = await this.professionalRepository.getProfessionals();
+    const professionals = await this.professionalRepository.getAllProfessionals();
     const hasAdmin = professionals.some(prof => prof.profile === "ADMINISTRATOR");
     
     if (!hasAdmin) {

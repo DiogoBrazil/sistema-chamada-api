@@ -14,6 +14,8 @@ import { GetProfessionalByIdUseCase } from "./useCases/professional/GetProfessio
 import { DeleteProfessionalUseCase } from "./useCases/professional/DeleteProfessionalByIdUseCase";
 import { UpdateProfessionalUseCase } from "./useCases/professional/UpdateProfessionalByIdUseCase";
 import { InitializeAdminUseCase } from "./useCases/professional/InitializeAdminUseCase";
+import { GetProfessionalByCpfUseCase } from "./useCases/professional/GetProfessionalByCpfUseCase";
+import { GetProfessionalsByNameUseCase } from "./useCases/professional/GetProfessionalByNameUseCase";
 
 // Use cases (patient)
 import { CreatePatientUseCase } from "./useCases/patient/CreatePatientUseCase";
@@ -46,6 +48,8 @@ container.bind(TYPES.AttendanceRepository).to(AttendanceRepository).inSingletonS
 container.bind(TYPES.CreateProfessionalUseCase).to(CreateProfessionalUseCase);
 container.bind(TYPES.GetProfessionalsUseCase).to(GetProfessionalsUseCase);
 container.bind(TYPES.GetProfessionalByIdUseCase).to(GetProfessionalByIdUseCase);
+container.bind(TYPES.GetProfessionalByCpfUseCase).to(GetProfessionalByCpfUseCase);
+container.bind(TYPES.GetProfessionalByNameUseCase).to(GetProfessionalsByNameUseCase);
 container.bind(TYPES.LoginProfessionalUseCase).to(LoginProfessionalUseCase);
 container.bind(TYPES.SetOfficeUseCase).to(SetOfficeUseCase);
 container.bind(TYPES.DeleteProfessionalUseCase).to(DeleteProfessionalUseCase);

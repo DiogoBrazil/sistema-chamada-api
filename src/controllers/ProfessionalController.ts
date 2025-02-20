@@ -6,6 +6,8 @@ import { GetProfessionalsUseCase } from "../useCases/professional/GetProfessiona
 import { GetProfessionalByIdUseCase } from "../useCases/professional/GetProfessionalByIdUseCase";
 import { UpdateProfessionalUseCase } from "../useCases/professional/UpdateProfessionalByIdUseCase";
 import { DeleteProfessionalUseCase } from "../useCases/professional/DeleteProfessionalByIdUseCase";
+import { GetProfessionalByCpfUseCase } from "../useCases/professional/GetProfessionalByCpfUseCase";
+import { GetProfessionalsByNameUseCase } from "../useCases/professional/GetProfessionalByNameUseCase";
 
 export class ProfessionalController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -35,8 +37,55 @@ export class ProfessionalController {
   
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const page = parseInt(req.params.page) || 1;
       const useCase = container.get<GetProfessionalsUseCase>(TYPES.GetProfessionalsUseCase);
-      const result = await useCase.execute();
+      const result = await useCase.execute(page);
+      
+      res.status(200).json({
+        message: "Professionals retrieved successfully",
+        data: result.data,
+        pagination: {
+          currentPage: result.currentPage,
+          totalPages: result.totalPages,
+          totalItems: result.totalItems
+        },
+        status_code: 200
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getByCpf(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const cpf = req.params.cpf;
+      const useCase = container.get<GetProfessionalByCpfUseCase>(TYPES.GetProfessionalByCpfUseCase);
+      const result = await useCase.execute(cpf);
+      
+      if (!result) {
+        res.status(404).json({
+          message: "Professional not found",
+          data: null,
+          status_code: 404
+        });
+        return;
+      }
+      
+      res.status(200).json({
+        message: "Professional retrieved successfully",
+        data: result,
+        status_code: 200
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getByName(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const name = req.params.name;
+      const useCase = container.get<GetProfessionalsByNameUseCase>(TYPES.GetProfessionalByNameUseCase);
+      const result = await useCase.execute(name);
       res.status(200).json({
         message: "Professionals retrieved successfully",
         data: result,
