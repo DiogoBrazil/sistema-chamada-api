@@ -7,6 +7,12 @@ import { TYPES } from './types';
 import { InitializeAdminUseCase } from './useCases/professional/InitializeAdminUseCase';
 
 const server = http.createServer(app);
+
+// Rota de teste ao iniciar o servidor
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
+
 const io = new SocketIOServer(server, {
   cors: {
     origin: '*',
@@ -26,6 +32,7 @@ const initializeAdmin = async () => {
     console.error('Error initializing admin:', error);
   }
 };
+
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, async () => {

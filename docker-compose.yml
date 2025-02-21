@@ -1,10 +1,51 @@
+version: '3.8'
+
 services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env.prod
+    environment:
+      DATABASE_URL: "postgresql://ribeiro:ribeiro123%40medcall@db:5432/medcall?schema=public"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: sh -c "npm run migrate && npm start"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ribeiro -d medcall"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   db:
-    image: postgres:16
+    image: postgres:16-alpine
     restart: always
+    env_file:
+      - .env.prod
     environment:
       POSTGRES_USER: ribeiro
-      POSTGRES_PASSWORD: ribeiro123
-      POSTGRES_DB: callpatient
+      POSTGRES_PASSWORD: ribeiro123@medcall
+      POSTGRES_DB: medcall
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "5432:5432"
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
