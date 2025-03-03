@@ -14,4 +14,9 @@ router.post("/set-office",
     authController.setOffice(req, res, next)
 );
 
+router.post("/set-attendance-mode", 
+  (req: Request, res: Response, next: NextFunction) => 
+    authController.setAttendanceMode(req, res, next)
+);
+
 export default router;

@@ -1,8 +1,11 @@
+// src/controllers/AuthController.ts (atualizado)
+
 import { Request, Response, NextFunction } from "express";
 import { container } from "../container";
 import { TYPES } from "../types";
 import { LoginProfessionalUseCase } from "../useCases/professional/LoginProfessionalUseCase";
 import { SetOfficeUseCase } from "../useCases/professional/SetOfficeUseCase";
+import { SetAttendanceModeUseCase } from "../useCases/professional/SetAttendanceModeUseCase";
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -34,6 +37,41 @@ export class AuthController {
       const result = await useCase.execute(professionalId, office);
       res.status(200).json({
         message: "Office set successfully",
+        data: result,
+        status_code: 200
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({
+          message: error.message,
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
+      next(error);
+    }
+  }
+
+  // Novo método para definir o modo de atendimento (triagem ou consulta)
+  async setAttendanceMode(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { professionalId, attendanceMode } = req.body;
+      
+      if (!professionalId || !attendanceMode) {
+        res.status(400).json({
+          message: "professionalId and attendanceMode are required",
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
+
+      const useCase = container.get<SetAttendanceModeUseCase>(TYPES.SetAttendanceModeUseCase);
+      const result = await useCase.execute({ professionalId, attendanceMode });
+      
+      res.status(200).json({
+        message: "Attendance mode set successfully",
         data: result,
         status_code: 200
       });

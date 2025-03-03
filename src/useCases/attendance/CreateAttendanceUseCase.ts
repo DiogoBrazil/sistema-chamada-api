@@ -13,7 +13,11 @@ export class CreateAttendanceUseCase {
     this.attendanceRepository = attendanceRepository;
   }
   
-  async execute(patientId: number): Promise<Attendance> {
-    return this.attendanceRepository.createAttendance(patientId);
+  async execute(patientId: number, attendanceStage: string): Promise<Attendance> {
+    const allowedStages = ["TRIAGE", "DENTAL_CONSULTATION", "VACCINE"];
+    if (!allowedStages.includes(attendanceStage)) {
+      throw new Error("Invalid attendance stage");
+    }
+    return this.attendanceRepository.createAttendance(patientId, attendanceStage);
   }
 }

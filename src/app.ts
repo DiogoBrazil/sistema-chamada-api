@@ -5,6 +5,8 @@ import patientRoutes from "./routes/patientRoutes";
 import attendanceRoutes from "./routes/attendanceRoutes";
 import authRoutes from "./routes/authRoutes";
 import reportRoutes from "./routes/reportRoutes";
+import patientAddressRoutes from "./routes/patientAddressRoutes";
+import professionalAddressRoutes from "./routes/professionalAddressRoutes";
 import { apiLeyMiddleware } from "./middleware/apiLeyMiddleware";
 import { authMiddleware } from "./middleware/authMiddleware";
 import { roleMiddleware } from "./middleware/roleMiddleware";
@@ -25,6 +27,8 @@ app.use("/api", (req, res, next) => { authMiddleware(req, res, next); });
 app.use("/api/professionals", professionalRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/attendances", attendanceRoutes);
+app.use("/api/patients", patientAddressRoutes);
+app.use("/api/professionals", professionalAddressRoutes);
 
 // Rota que exige perfil específico (apenas médicos e admins)
 app.use("/api/reports", roleMiddleware(['ADMINISTRATOR', 'DOCTOR']), reportRoutes);

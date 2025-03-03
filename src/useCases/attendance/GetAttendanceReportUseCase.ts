@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { AttendanceRepository } from "../../repositories/AttendanceRepository";
 import { TYPES } from "../../types";
-import { Attendance } from "@prisma/client";
+import { Attendance, AttendanceHistory } from "@prisma/client";
 import { IGetAttendanceReportDTO } from "../../interfaces/attendance/IGetAttendanceReportDTO";
 
 @injectable()
@@ -14,7 +14,7 @@ export class GetAttendanceReportUseCase {
     this.attendanceRepository = attendanceRepository;
   }
   
-  async execute(data: IGetAttendanceReportDTO): Promise<{ count: number, attendances: Attendance[] }> {
+  async execute(data: IGetAttendanceReportDTO): Promise<{ count: number, attendances: AttendanceHistory[] }> {
     const { professionalId, startDate, startTime, endDate, endTime } = data;
     const professionalIdNum = Number(professionalId);
     if (isNaN(professionalIdNum)) {

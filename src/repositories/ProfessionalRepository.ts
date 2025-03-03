@@ -1,6 +1,7 @@
 import { injectable } from "inversify";
 import { PrismaClient, Professional, AttendanceStatus } from "@prisma/client";
 import { IPaginatedProfessionalResult } from "../interfaces/professional/IPaginatedProfessionalResult";
+import { IAddressDTO } from "../interfaces/address/IAddressDTO";
 
 @injectable()
 export class ProfessionalRepository {
@@ -16,6 +17,9 @@ export class ProfessionalRepository {
     cpf: string;
     profile: string;
     password: string;
+    phone?: string;
+    sex?: string;
+    attendanceMode?: string;
   }): Promise<Professional> {
     return this.prisma.professional.create({ data });
   }
@@ -39,6 +43,12 @@ export class ProfessionalRepository {
         take: this.itemsPerPage,
         orderBy: {
           fullName: 'asc'
+        },
+        include: {
+          addresses: {
+            where: { isMain: true },
+            take: 1
+          }
         }
       }),
       this.prisma.professional.count()
@@ -63,6 +73,12 @@ export class ProfessionalRepository {
         fullName: {
           contains: name,
           mode: 'insensitive'
+        },
+      },
+      include: {
+        addresses: {
+          where: { isMain: true },
+          take: 1
         }
       }
     });
@@ -71,7 +87,12 @@ export class ProfessionalRepository {
   }
   
   async getProfessionalById(id: number): Promise<Professional | null> {
-    return this.prisma.professional.findUnique({ where: { id } });
+    return this.prisma.professional.findUnique({ 
+      where: { id },
+      include: {
+        addresses: true
+      } 
+    });
   }
   
   async updateOffice(professionalId: number, office: number): Promise<Professional> {
@@ -81,8 +102,23 @@ export class ProfessionalRepository {
     });
   }
   
+  async updateAttendanceMode(professionalId: number, attendanceMode: string): Promise<Professional> {
+    return this.prisma.professional.update({
+      where: { id: professionalId },
+      data: { attendanceMode },
+    });
+  }
+  
   async getProfessionalByCpf(cpf: string): Promise<Professional | null> {
-    return this.prisma.professional.findUnique({ where: { cpf } });
+    return this.prisma.professional.findUnique({ 
+      where: { cpf },
+      include: {
+        addresses: {
+          where: { isMain: true },
+          take: 1
+        }
+      } 
+    });
   }
 
   async deleteProfessional(id: number): Promise<void> {
@@ -97,6 +133,9 @@ export class ProfessionalRepository {
     profile?: string;
     password?: string;
     currentOffice?: number | null;
+    attendanceMode?: string;
+    phone?: string;
+    sex?: string;
   }): Promise<Professional> {
     return this.prisma.professional.update({
       where: { id },

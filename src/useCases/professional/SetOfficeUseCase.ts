@@ -14,9 +14,10 @@ export class SetOfficeUseCase {
   }
   
   async execute(professionalId: number, office: number): Promise<Omit<Professional, "password">> {
-    if (!professionalId || !office) {
+    if (professionalId === undefined || professionalId === null || 
+      office === undefined || office === null) {
       throw new Error("professionalId and office are required.");
-    }
+  }
     const professional = await this.professionalRepository.updateOffice(professionalId, office);
     const { password, ...result } = professional;
     return result;

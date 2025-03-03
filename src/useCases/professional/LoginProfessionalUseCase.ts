@@ -43,9 +43,11 @@ export class LoginProfessionalUseCase {
     
     const token = jwt.sign(
       {
+        id: professional.id,
         fullName: professional.fullName,
         cpf: professional.cpf,
         profile: professional.profile,
+        attendanceMode: professional.attendanceMode,
       },
       secret,
       { expiresIn }

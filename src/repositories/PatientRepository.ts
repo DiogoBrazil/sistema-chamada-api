@@ -13,8 +13,12 @@ export class PatientRepository {
   
   async createPatient(data: {
     fullName: string;
+    socialName: string;  
     cpf: string;
     birthDate: string;
+    phone?: string;      
+    sex?: string;
+    race?: string;
   }): Promise<Patient> {
     return this.prisma.patient.create({ data });
   }
@@ -29,6 +33,12 @@ export class PatientRepository {
         take: this.itemsPerPage,
         orderBy: {
           fullName: 'asc'
+        },
+        include: {
+          addresses: {
+            where: { isMain: true },
+            take: 1
+          }
         }
       }),
       this.prisma.patient.count()
@@ -47,7 +57,10 @@ export class PatientRepository {
   async getPatientById(id: number): Promise<Patient | null> {
     return this.prisma.patient.findUnique({
       where: { id },
-      include: { attendances: true },
+      include: { 
+        attendances: true,
+        addresses: true
+      },
     });
   }
 
@@ -87,24 +100,46 @@ export class PatientRepository {
           contains: name,
           mode: 'insensitive'
         }
+      },
+      include: {
+        addresses: {
+          where: { isMain: true },
+          take: 1
+        }
       }
     });
   }
 
   async updatePatient(id: number, data: {
     fullName?: string;
+    socialName?: string;
     cpf?: string;
     birthDate?: string;
+    phone?: string;
+    sex?: string;
+    race?: string;
   }): Promise<Patient> {
     return this.prisma.patient.update({
       where: { id },
-      data
+      data,
+      include: {
+        addresses: {
+          where: { isMain: true },
+          take: 1
+        }
+      }
     });
   }
 
   async getPatientByCpf(cpf: string): Promise<Patient | null> {
     return this.prisma.patient.findUnique({
-      where: { cpf }
+      where: { cpf },
+      include: {
+        addresses: {
+          where: { isMain: true },
+          take: 1
+        }
+      }
     });
   }
 }
