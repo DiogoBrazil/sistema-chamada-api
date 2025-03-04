@@ -18,6 +18,7 @@ model Patient {
   race         String?           
   addresses    PatientAddress[]  
   attendances  Attendance[]
+  healthUnitFlowAudit HealthUnitFlowAudit[]
 }
 
 model PatientAddress {
@@ -28,7 +29,7 @@ model PatientAddress {
   neighborhood String?
   city         String
   state        String
-  zipCode      String
+  zipCode      String?
   isMain       Boolean   @default(true) 
   patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId    Int       
@@ -43,10 +44,14 @@ model Professional {
   currentOffice     Int?       
   attendanceMode    String?
   phone             String?                 
-  sex               String?                 
+  sex               String? 
+  email             String?
+  active            Boolean                 @default(true)
+  healthUnit        HealthUnit[]        
   addresses         ProfessionalAddress[]   
   attendances       Attendance[]
   attendanceHistory AttendanceHistory[]
+  healthUnitFlowAudit HealthUnitFlowAudit[]
 }
 
 model ProfessionalAddress {
@@ -57,10 +62,48 @@ model ProfessionalAddress {
   neighborhood     String?
   city             String
   state            String
-  zipCode          String
+  zipCode          String?
   isMain           Boolean      @default(true)  
   professional     Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
   professionalId   Int       
+}
+
+model HealthUnit {
+  id           Int       @id @default(autoincrement())
+  name         String
+  cnpj         String    @unique
+  phone        String?
+  addresses    HealthUnitAddress[]
+  professionals Professional[]
+  healthUnitFlowAudit HealthUnitFlowAudit[]
+}
+
+model HealthUnitAddress {
+  id           Int          @id @default(autoincrement())
+  street       String
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String
+  state        String
+  zipCode      String?
+  isMain       Boolean      @default(true) 
+  healthUnit   HealthUnit   @relation(fields: [healthUnitId], references: [id], onDelete: Cascade)
+  healthUnitId Int       
+}
+
+model HealthUnitFlowAudit {
+  id              Int           @id @default(autoincrement())
+  healthUnit      HealthUnit    @relation(fields: [healthUnitId], references: [id], onDelete: Cascade)
+  healthUnitId    Int
+  flowAction      FlowAction
+  ofTheAttendanceStage AttendanceStage?
+  toTheAttendanceStage AttendanceStage?
+  createdAt       DateTime      @default(now())
+  professional    Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+  professionalId  Int?
+  patient         Patient?      @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  patientId       Int?
 }
 
 model Attendance {
@@ -86,9 +129,25 @@ model AttendanceHistory {
   fromStage       AttendanceStage?
   toStage         AttendanceStage
   status          AttendanceStatus
-  timestamp       DateTime          @default(now())
+  cid             Cid? @relation(fields: [cidid], references: [id])
+  cidid Int?
+  finishedAt      DateTime          @default(now())
   officeNumber    Int?
   note            String?
+}
+
+model Cid {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  description String
+  AttendanceHistory AttendanceHistory[]
+}
+
+enum FlowAction {
+  ATTENDANCE_GENERATED
+  PATIENT_CALLED
+  PATIENT_REFERRED
+  ATTENDANCE_FINALIZED
 }
 
 enum AttendanceStatus {

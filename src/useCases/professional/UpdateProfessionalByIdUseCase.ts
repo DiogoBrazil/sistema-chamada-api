@@ -31,14 +31,15 @@ export class UpdateProfessionalUseCase {
   }
   
   async execute(id: number, data: UpdateProfessionalDTO): Promise<Omit<Professional, 'password'>> {
-    // Verifica se o profissional existe
+    
     const professionalExists = await this.professionalRepository.getProfessionalById(id);
     if (!professionalExists) {
       throw new Error("Professional not found");
     }
 
     const allowedProfiles = [
-      "ADMINISTRATOR", 
+      "GENERAL_ADMINISTRATOR",
+      "LOCAL_ADMINISTRATOR", 
       "DOCTOR", 
       "RECEPTIONIST", 
       "NURSE", 
@@ -47,9 +48,8 @@ export class UpdateProfessionalUseCase {
       "ACS"            
     ];
 
-    // Valida perfil se fornecido
     if (data.profile && !allowedProfiles.includes(data.profile)) {
-      throw new Error("Invalid profile. Only 'ADMINISTRATOR', 'DOCTOR', 'RECEPTIONIST', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST', or 'ACS' are allowed.");
+      throw new Error("Invalid profile. Only 'GENERAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'RECEPTIONIST', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST', or 'ACS' are allowed.");
     }
 
     // Se o CPF foi fornecido, verifica se já existe em outro profissional
@@ -63,7 +63,6 @@ export class UpdateProfessionalUseCase {
     // Separa os dados do endereço do profissional
     const { address, ...professionalData } = data;
 
-    // Se a senha foi fornecida, faz o hash
     let updateProfessionalData = { ...professionalData };
     if (professionalData.password) {
       updateProfessionalData.password = await argon2.hash(professionalData.password);

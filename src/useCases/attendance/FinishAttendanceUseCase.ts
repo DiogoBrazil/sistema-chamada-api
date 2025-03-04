@@ -1,30 +1,43 @@
 import { injectable, inject } from "inversify";
 import { AttendanceRepository } from "../../repositories/AttendanceRepository";
 import { ProfessionalRepository } from "../../repositories/ProfessionalRepository";
+import { CidRepository } from "../../repositories/CidRepository";
 import { TYPES } from "../../types";
 import { Attendance, AttendanceStage } from "@prisma/client";
 
-// Constantes para números de consultório padronizados
+
 const OFFICE_NUMBERS = {
   TRIAGE: 1000,
   VACCINE: 1001,
   DENTAL: 1002
 };
 
+interface FinishAttendanceDTO {
+  attendanceId: number;
+  professionalId: number;
+  cidId?: number;
+  note?: string;
+}
+
 @injectable()
 export class FinishAttendanceUseCase {
   private attendanceRepository: AttendanceRepository;
   private professionalRepository: ProfessionalRepository;
+  private cidRepository: CidRepository;
   
   constructor(
     @inject(TYPES.AttendanceRepository) attendanceRepository: AttendanceRepository,
-    @inject(TYPES.ProfessionalRepository) professionalRepository: ProfessionalRepository
+    @inject(TYPES.ProfessionalRepository) professionalRepository: ProfessionalRepository,
+    @inject(TYPES.CidRepository) cidRepository: CidRepository
   ) {
     this.attendanceRepository = attendanceRepository;
     this.professionalRepository = professionalRepository;
+    this.cidRepository = cidRepository;
   }
   
-  async execute(id: number, professionalId: number): Promise<Attendance> {
+  async execute(data: FinishAttendanceDTO): Promise<Attendance> {
+    const { attendanceId, professionalId, cidId, note } = data;
+    
     const professional = await this.professionalRepository.getProfessionalById(professionalId);
     if (!professional) {
       throw new Error("Professional not found");
@@ -35,9 +48,22 @@ export class FinishAttendanceUseCase {
       throw new Error("Community health agents cannot finish attendances");
     }
     
-    const attendance = await this.attendanceRepository.getAttendanceById(id);
+    const attendance = await this.attendanceRepository.getAttendanceById(attendanceId);
     if (!attendance) {
       throw new Error("Attendance not found");
+    }
+    
+    // Verificar se o CID existe (se fornecido)
+    if (cidId !== undefined) {
+      // Verificar se o profissional é médico
+      if (professional.profile !== "DOCTOR" && professional.profile !== "ADMINISTRATOR") {
+        throw new Error("Only doctors can include CID in attendance records");
+      }
+      
+      const cid = await this.cidRepository.getCidById(cidId);
+      if (!cid) {
+        throw new Error("CID not found");
+      }
     }
     
     // Determina o número de consultório com base no estágio de atendimento
@@ -69,6 +95,6 @@ export class FinishAttendanceUseCase {
         throw new Error("Invalid attendance stage");
     }
     
-    return this.attendanceRepository.finishAttendance(id, professionalId, office);
+    return this.attendanceRepository.finishAttendance(attendanceId, professionalId, office, cidId, note);
   }
 }

@@ -8,5 +8,7 @@ export interface ICreateProfessionalDTO {
   attendanceMode?: string;
   phone?: string;
   sex?: string;
+  email?: string;
   address?: IAddressDTO;
+  healthUnitId?: number;
 }

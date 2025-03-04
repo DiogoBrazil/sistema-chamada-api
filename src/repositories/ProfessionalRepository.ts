@@ -19,6 +19,7 @@ export class ProfessionalRepository {
     password: string;
     phone?: string;
     sex?: string;
+    email?: string;
     attendanceMode?: string;
   }): Promise<Professional> {
     return this.prisma.professional.create({ data });
@@ -94,6 +95,18 @@ export class ProfessionalRepository {
       } 
     });
   }
+
+  async getProfessionalByEmail(email: string): Promise<Professional | null> {
+    return this.prisma.professional.findFirst({ 
+      where: { email },
+      include: {
+        addresses: {
+          where: { isMain: true },
+          take: 1
+        }
+      } 
+    });
+  }
   
   async updateOffice(professionalId: number, office: number): Promise<Professional> {
     return this.prisma.professional.update({
@@ -153,5 +166,41 @@ export class ProfessionalRepository {
       }
     });
     return !!attendance;
+  }
+
+  async getProfessionalWithHealthUnits(id: number): Promise<(Professional & { healthUnit: { id: number }[] }) | null> {
+    return this.prisma.professional.findUnique({
+      where: { id },
+      include: { 
+        healthUnit: true,
+        addresses: true
+      }
+    });
+  }
+  
+  async checkProfessionalInHealthUnit(professionalId: number, healthUnitId: number): Promise<boolean> {
+    const professional = await this.prisma.professional.findUnique({
+      where: { id: professionalId },
+      include: { healthUnit: true }
+    }) as (Professional & { healthUnit: { id: number }[] }) | null;
+    
+    if (!professional || !professional.healthUnit) {
+      return false;
+    }
+    
+    return professional.healthUnit.some(unit => unit.id === healthUnitId);
+  }
+  
+  async getAdminHealthUnits(adminId: number): Promise<{ id: number }[]> {
+    const professional = await this.prisma.professional.findUnique({
+      where: { id: adminId },
+      include: { 
+        healthUnit: {
+          select: { id: true }
+        }
+      }
+    }) as (Professional & { healthUnit: { id: number }[] }) | null;
+    
+    return professional?.healthUnit || [];
   }
 }

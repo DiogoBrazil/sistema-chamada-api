@@ -229,8 +229,9 @@ export class AttendanceController {
         return;
       }
    
-      const id = Number(req.params.id);
+      const attendanceId = Number(req.params.id);
       const professionalId = req.user?.id;
+      const { cidId, note } = req.body;
       
       if (!professionalId) {
         res.status(400).json({
@@ -241,8 +242,35 @@ export class AttendanceController {
         return;
       }
       
+      // Validar cidId - Apenas médicos podem incluir CID
+      if (cidId) {
+        if (userProfile !== 'DOCTOR' && userProfile !== 'ADMINISTRATOR') {
+          res.status(403).json({
+            message: "Only doctors can include CID in attendance records",
+            data: null,
+            status_code: 403
+          });
+          return;
+        }
+        
+        if (isNaN(Number(cidId))) {
+          res.status(400).json({
+            message: "Invalid CID ID",
+            data: null,
+            status_code: 400
+          });
+          return;
+        }
+      }
+      
       const useCase = container.get<FinishAttendanceUseCase>(TYPES.FinishAttendanceUseCase);
-      const result = await useCase.execute(id, professionalId);
+      const result = await useCase.execute({
+        attendanceId,
+        professionalId,
+        cidId: cidId ? Number(cidId) : undefined,
+        note
+      });
+      
       res.status(200).json({
         message: "Attendance finished successfully",
         data: result,
@@ -254,7 +282,8 @@ export class AttendanceController {
           "Professional not found": 404,
           "Attendance not found": 404,
           "Community health agents cannot finish attendances": 403,
-          "Office not set for the professional": 400
+          "Office not set for the professional": 400,
+          "CID not found": 404
         };
   
         const statusCode = errorMessages[error.message] || 500;

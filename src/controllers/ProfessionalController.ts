@@ -8,13 +8,18 @@ import { UpdateProfessionalUseCase } from "../useCases/professional/UpdateProfes
 import { DeleteProfessionalUseCase } from "../useCases/professional/DeleteProfessionalByIdUseCase";
 import { GetProfessionalByCpfUseCase } from "../useCases/professional/GetProfessionalByCpfUseCase";
 import { GetProfessionalsByNameUseCase } from "../useCases/professional/GetProfessionalByNameUseCase";
+import { CreateProfessionalByLocalAdminUseCase } from "../useCases/professional/CreateProfessionalByLocalAdminUseCase";
+import { CreateProfessionalByGeneralAdminUseCase } from "../useCases/professional/CreateProfessionalByGeneralAdminUseCase";
 
 export class ProfessionalController {
+  
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Verifica se o usuário é admin
+      // Verifica o tipo de admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'ADMINISTRATOR') {
+      const userId = req.user?.id;
+      
+      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
         res.status(403).json({
           message: "Only administrators can create professionals",
           data: null,
@@ -23,13 +28,64 @@ export class ProfessionalController {
         return;
       }
 
-      const useCase = container.get<CreateProfessionalUseCase>(TYPES.CreateProfessionalUseCase);
-      const result = await useCase.execute(req.body);
-      res.status(201).json({
-        message: "Professional created successfully",
-        data: result,
-        status_code: 201
-      });
+      // Rotas diferentes dependendo do tipo de administrador
+      if (userProfile === 'LOCAL_ADMINISTRATOR' && userId) {
+        try {
+          const useCase = container.get<CreateProfessionalByLocalAdminUseCase>(TYPES.CreateProfessionalByLocalAdminUseCase);
+          const result = await useCase.execute(userId, req.body);
+          
+          res.status(201).json({
+            message: "Professional created and linked to health unit successfully",
+            data: result,
+            status_code: 201
+          });
+        } catch (error) {
+          if (error instanceof Error) {
+            const errorMessages: { [key: string]: number } = {
+              "Local administrators cannot create administrator profiles": 403,
+              "Local administrator is not linked to any health unit": 400,
+              "Local administrator does not have access to the specified health unit": 403
+            };
+            
+            const statusCode = errorMessages[error.message] || 500;
+            res.status(statusCode).json({
+              message: error.message,
+              data: null,
+              status_code: statusCode
+            });
+            return;
+          }
+          throw error;
+        }
+      } else {
+        // Admin geral usa o caso de uso dedicado para criar profissionais
+        try {
+          const useCase = container.get<CreateProfessionalByGeneralAdminUseCase>(TYPES.CreateProfessionalByGeneralAdminUseCase);
+          const result = await useCase.execute(req.body);
+          
+          res.status(201).json({
+            message: "Professional created successfully",
+            data: result,
+            status_code: 201
+          });
+        } catch (error) {
+          if (error instanceof Error) {
+            const errorMessages: { [key: string]: number } = {
+              "Health unit is required for non-general administrator profiles": 400,
+              "Health unit not found": 404
+            };
+            
+            const statusCode = errorMessages[error.message] || 500;
+            res.status(statusCode).json({
+              message: error.message,
+              data: null,
+              status_code: statusCode
+            });
+            return;
+          }
+          throw error;
+        }
+      }
     } catch (error) {
       next(error);
     }

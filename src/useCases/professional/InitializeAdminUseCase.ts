@@ -2,7 +2,8 @@ import { injectable, inject } from "inversify";
 import { ProfessionalRepository } from "../../repositories/ProfessionalRepository";
 import { TYPES } from "../../types";
 import argon2 from "argon2";
-import { Professional } from "@prisma/client";
+
+
 
 @injectable()
 export class InitializeAdminUseCase {
@@ -15,9 +16,9 @@ export class InitializeAdminUseCase {
   }
   
   async execute(): Promise<void> {
-    // Verifica se já existe um administrador
+    // Verifica se já existe um administrador geral
     const professionals = await this.professionalRepository.getAllProfessionals();
-    const hasAdmin = professionals.some(prof => prof.profile === "ADMINISTRATOR");
+    const hasAdmin = professionals.some(prof => prof.profile === "GENERAL_ADMINISTRATOR");
     
     if (!hasAdmin) {
       // Cria o administrador padrão

@@ -59,7 +59,7 @@ export class AttendanceRepository {
     });
   }
   
-  async finishAttendance(id: number, professionalId: number, office: number): Promise<Attendance> {
+  async finishAttendance(id: number, professionalId: number, office: number, cidId?: number, note?: string): Promise<Attendance> {
     // Primeiro, buscar o atendimento atual para obter o estágio atual
     const attendance = await this.prisma.attendance.findUnique({
       where: { id },
@@ -83,17 +83,25 @@ export class AttendanceRepository {
         include: { patient: true },
       });
       
+      // Preparar os dados para o histórico
+      const historyData: any = {
+        attendance: { connect: { id } },
+        professional: { connect: { id: professionalId } },
+        fromStage: attendance.stage,
+        toStage: attendance.stage,   // Mesmo estágio, apenas mudando status
+        status: AttendanceStatus.FINISHED,
+        officeNumber: office,
+        note: note || `Atendimento finalizado no estágio ${attendance.stage}`
+      };
+      
+      // Adicionar o CID ao histórico, se fornecido
+      if (cidId) {
+        historyData.cid = { connect: { id: cidId } };
+      }
+      
       // Criar um registro no histórico
       await tx.attendanceHistory.create({
-        data: {
-          attendance: { connect: { id } },
-          professional: { connect: { id: professionalId } },
-          fromStage: attendance.stage,
-          toStage: attendance.stage,   // Mesmo estágio, apenas mudando status
-          status: AttendanceStatus.FINISHED,
-          officeNumber: office,
-          note: `Atendimento finalizado no estágio ${attendance.stage}`
-        }
+        data: historyData
       });
       
       return updatedAttendance;
@@ -128,7 +136,7 @@ export class AttendanceRepository {
     return this.prisma.attendanceHistory.findMany({
       where: {
         professionalId,
-        timestamp: { gte: start, lte: end },
+        finishedAt: { gte: start, lte: end },
         status: AttendanceStatus.FINISHED,
       },
       include: { attendance: { include: { patient: true } } },

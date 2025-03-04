@@ -16,11 +16,22 @@ export class SetAttendanceModeUseCase {
   
   async execute(data: ISetAttendanceModeDTO): Promise<Omit<Professional, "password">> {
     const { professionalId, attendanceMode } = data;
-    
-    if (!["TRIAGE", "CONSULTATION"].includes(attendanceMode)) {
-      throw new Error("Invalid attendance mode. Only 'TRIAGE' or 'CONSULTATION' are allowed.");
+
+    const professionalExists = await this.professionalRepository.getProfessionalById(professionalId);
+    if (!professionalExists) {
+      throw new Error("Professional not found.");
     }
-    
+
+    if (professionalExists.profile == "NURSE") {
+      if (!["TRIAGE", "CONSULTATION", "VACCINE"].includes(attendanceMode)) {
+        throw new Error("Invalid attendance mode. Only 'TRIAGE' or 'CONSULTATION' or 'VACCINE' are allowed.");
+      }
+    } else if (professionalExists.profile == "NURSING_TECHNICIAN") {
+      if (!["TRIAGE", "VACCINE"].includes(attendanceMode)) {
+        throw new Error("Invalid attendance mode. Only 'TRIAGE' or 'CONSULTATION' or 'VACCINE' are allowed.");
+      }
+    }
+
     const professional = await this.professionalRepository.updateAttendanceMode(professionalId, attendanceMode);
     const { password, ...result } = professional;
     return result;

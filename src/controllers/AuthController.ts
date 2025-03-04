@@ -1,5 +1,3 @@
-// src/controllers/AuthController.ts (atualizado)
-
 import { Request, Response, NextFunction } from "express";
 import { container } from "../container";
 import { TYPES } from "../types";

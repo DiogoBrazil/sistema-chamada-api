@@ -26,8 +26,8 @@ export class CreatePatientAddressUseCase {
     }
     
     // Validação básica de endereço
-    if (!data.street || !data.city || !data.state || !data.zipCode) {
-      throw new Error("Street, city, state and zipCode are required for address");
+    if (!data.street || !data.city || !data.state || !data.number) {
+      throw new Error("Street, city, state and number are required for address");
     }
     
     return this.patientAddressRepository.createAddress(patientId, data);

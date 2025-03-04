@@ -5,6 +5,7 @@ import { TYPES } from "../../types";
 import argon2 from "argon2";
 import { Professional } from "@prisma/client";
 import { ICreateProfessionalDTO } from "../../interfaces/professional/ICreateProfessionalDTO";
+import { emailValidator } from "../../utils/emailValidator";
 
 @injectable()
 export class CreateProfessionalUseCase {
@@ -21,7 +22,8 @@ export class CreateProfessionalUseCase {
   
   async execute(data: ICreateProfessionalDTO): Promise<Omit<Professional, "password">> {
     const allowedProfiles = [
-      "ADMINISTRATOR", 
+      "GENERAL_ADMINISTRATOR",
+      "LOCAL_ADMINISTRATOR", 
       "DOCTOR", 
       "RECEPTIONIST", 
       "NURSE", 
@@ -31,30 +33,37 @@ export class CreateProfessionalUseCase {
     ];
     
     if (!allowedProfiles.includes(data.profile)) {
-      throw new Error("Invalid profile. Only 'ADMINISTRATOR', 'DOCTOR', 'RECEPTIONIST', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST', or 'ACS' are allowed.");
+      throw new Error("Invalid profile. Only 'GENERAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'RECEPTIONIST', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST' or 'ACS' are allowed.");
     }
     
     if (!data.password) {
       throw new Error("Password is required.");
     }
+
+    if (data.email) {
+      if (!emailValidator(data.email)) {
+        throw new Error("Invalid email.");
+      }
+      
+      const professionalByEmail = await this.professionalRepository.getProfessionalByEmail(data.email);
+      if (professionalByEmail) {
+        throw new Error("Email already in use.");
+      }
+    }
     
     // Separa os dados do endereço do profissional
     const { address, ...professionalData } = data;
     
-    // Faz o hash da senha
     const hashedPassword = await argon2.hash(data.password);
     
-    // Cria o profissional com a senha criptografada
     const professional = await this.professionalRepository.createProfessional({
       ...professionalData,
       password: hashedPassword
     });
     
-    // Se um endereço foi fornecido, adiciona-o
     if (address) {
-      // Validação básica de endereço
-      if (!address.street || !address.city || !address.state || !address.zipCode) {
-        throw new Error("Street, city, state and zipCode are required for address");
+      if (!address.street || !address.city || !address.state || !address.number) {
+        throw new Error("Street, city, state and number are required for address");
       }
       
       await this.professionalAddressRepository.createAddress(professional.id, address);

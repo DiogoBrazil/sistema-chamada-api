@@ -19,7 +19,6 @@ export class CreatePatientUseCase {
   }
   
   async execute(data: ICreatePatientDTO): Promise<Patient> {
-    // Verifica se o nome social foi fornecido (obrigatório)
     if (!data.socialName) {
       throw new Error("Social name is required");
     }
@@ -27,14 +26,11 @@ export class CreatePatientUseCase {
     // Separa os dados do endereço do paciente
     const { address, ...patientData } = data;
     
-    // Cria o paciente
     const patient = await this.patientRepository.createPatient(patientData);
     
-    // Se um endereço foi fornecido, adiciona-o
     if (address) {
-      // Validação básica de endereço
-      if (!address.street || !address.city || !address.state || !address.zipCode) {
-        throw new Error("Street, city, state and zipCode are required for address");
+      if (!address.street || !address.city || !address.state || !address.number) {
+        throw new Error("Street, city, state and number are required for address");
       }
       
       await this.patientAddressRepository.createAddress(patient.id, address);

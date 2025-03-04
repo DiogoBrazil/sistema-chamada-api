@@ -5,6 +5,9 @@ export const TYPES = {
   AttendanceRepository: Symbol.for("AttendanceRepository"),
   PatientAddressRepository: Symbol.for("PatientAddressRepository"),
   ProfessionalAddressRepository: Symbol.for("ProfessionalAddressRepository"),
+  HealthUnitRepository: Symbol.for("HealthUnitRepository"),
+  HealthUnitAddressRepository: Symbol.for("HealthUnitAddressRepository"),
+  CidRepository: Symbol.for("CidRepository"),
   
   // Use cases (professional)
   CreateProfessionalUseCase: Symbol.for("CreateProfessionalUseCase"),
@@ -15,6 +18,26 @@ export const TYPES = {
   InitializeAdminUseCase: Symbol.for("InitializeAdminUseCase"),
   GetProfessionalByCpfUseCase: Symbol.for("GetProfessionalByCpfUseCase"),
   GetProfessionalByNameUseCase: Symbol.for("GetProfessionalByNameUseCase"),
+  VerifyLocalAdminAccessUseCase: Symbol.for("VerifyLocalAdminAccessUseCase"),
+  CreateProfessionalByLocalAdminUseCase: Symbol.for("CreateProfessionalByLocalAdminUseCase"),
+  CreateProfessionalByGeneralAdminUseCase: Symbol.for("CreateProfessionalByGeneralAdminUseCase"),
+
+
+  // Use cases (health unit)
+  CreateHealthUnitUseCase: Symbol.for("CreateHealthUnitUseCase"),
+  GetHealthUnitsUseCase: Symbol.for("GetHealthUnitsUseCase"),
+  GetHealthUnitByIdUseCase: Symbol.for("GetHealthUnitByIdUseCase"),
+  UpdateHealthUnitUseCase: Symbol.for("UpdateHealthUnitUseCase"),
+  DeleteHealthUnitUseCase: Symbol.for("DeleteHealthUnitUseCase"),
+  AddProfessionalToHealthUnitUseCase: Symbol.for("AddProfessionalToHealthUnitUseCase"),
+  RemoveProfessionalFromHealthUnitUseCase: Symbol.for("RemoveProfessionalFromHealthUnitUseCase"),
+  
+  // Use cases (CID)
+  CreateCidUseCase: Symbol.for("CreateCidUseCase"),
+  GetCidsUseCase: Symbol.for("GetCidsUseCase"),
+  SearchCidUseCase: Symbol.for("GetCidByIdUseCase"),
+  UpdateCidUseCase: Symbol.for("UpdateCidUseCase"),
+  DeleteCidUseCase: Symbol.for("DeleteCidUseCase"),
   
   // Use cases (patient)
   CreatePatientUseCase: Symbol.for("CreatePatientUseCase"),

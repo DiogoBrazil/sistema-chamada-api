@@ -8,6 +8,9 @@ import { PatientRepository } from "./repositories/PatientRepository";
 import { AttendanceRepository } from "./repositories/AttendanceRepository";
 import { PatientAddressRepository } from "./repositories/PatientAddressRepository";
 import { ProfessionalAddressRepository } from "./repositories/ProfessionalAddressRepository";
+import { HealthUnitRepository } from "./repositories/HealthUnitRepository";
+import { HealthUnitAddressRepository } from "./repositories/HealthUnitAddressRepository";
+import { CidRepository } from "./repositories/CidRepository";
 
 // Use cases (professional)
 import { CreateProfessionalUseCase } from "./useCases/professional/CreateProfessionalUseCase";
@@ -19,6 +22,25 @@ import { InitializeAdminUseCase } from "./useCases/professional/InitializeAdminU
 import { GetProfessionalByCpfUseCase } from "./useCases/professional/GetProfessionalByCpfUseCase";
 import { GetProfessionalsByNameUseCase } from "./useCases/professional/GetProfessionalByNameUseCase";
 import { SetAttendanceModeUseCase } from "./useCases/professional/SetAttendanceModeUseCase";
+import { VerifyLocalAdminAccessUseCase } from "./useCases/professional/VerifyLocalAdminAccessUseCase";
+import { CreateProfessionalByGeneralAdminUseCase } from "./useCases/professional/CreateProfessionalByGeneralAdminUseCase";
+
+
+// Use cases (health unit)
+import { CreateHealthUnitUseCase } from "./useCases/healthUnit/CreateHealthUnitUseCase";
+import { GetHealthUnitsUseCase } from "./useCases/healthUnit/GetHealthUnitsUseCase";
+import { GetHealthUnitByIdUseCase } from "./useCases/healthUnit/GetHealthUnitByIdUseCase";
+import { UpdateHealthUnitUseCase } from "./useCases/healthUnit/UpdateHealthUnitUseCase";
+import { DeleteHealthUnitUseCase } from "./useCases/healthUnit/DeleteHealthUnitUseCase";
+import { AddProfessionalToHealthUnitUseCase } from "./useCases/healthUnit/AddProfessionalToHealthUnitUseCase";
+import { RemoveProfessionalFromHealthUnitUseCase } from "./useCases/healthUnit/RemoveProfessionalFromHealthUnitUseCase";
+
+// Use cases (CID)
+import { CreateCidUseCase } from "./useCases/cid/CreateCidUseCase";
+import { GetCidsUseCase } from "./useCases/cid/GetCidsUseCase";
+import { SearchCidUseCase } from "./useCases/cid/SearchCidUseCase";
+import { UpdateCidUseCase } from "./useCases/cid/UpdateCidUseCase";
+import { DeleteCidUseCase } from "./useCases/cid/DeleteCidUseCase";
 
 // Use cases (patient)
 import { CreatePatientUseCase } from "./useCases/patient/CreatePatientUseCase";
@@ -57,6 +79,8 @@ import { CreateProfessionalAddressUseCase } from "./useCases/address/professiona
 import { GetProfessionalAddressesUseCase } from "./useCases/address/professional/GetProfessionalAddressesUseCase";
 import { UpdateProfessionalAddressUseCase } from "./useCases/address/professional/UpdateProfessionalAddressUseCase";
 import { DeleteProfessionalAddressUseCase } from "./useCases/address/professional/DeleteProfessionalAddressUseCase";
+import { CreateProfessionalByLocalAdminUseCase } from "./useCases/professional/CreateProfessionalByLocalAdminUseCase";
+
 
 const container = new Container();
 
@@ -66,6 +90,9 @@ container.bind(TYPES.PatientRepository).to(PatientRepository).inSingletonScope()
 container.bind(TYPES.AttendanceRepository).to(AttendanceRepository).inSingletonScope();
 container.bind(TYPES.PatientAddressRepository).to(PatientAddressRepository).inSingletonScope();
 container.bind(TYPES.ProfessionalAddressRepository).to(ProfessionalAddressRepository).inSingletonScope();
+container.bind(TYPES.HealthUnitRepository).to(HealthUnitRepository).inSingletonScope();
+container.bind(TYPES.HealthUnitAddressRepository).to(HealthUnitAddressRepository).inSingletonScope();
+container.bind(TYPES.CidRepository).to(CidRepository).inSingletonScope();
 
 // Use case bindings (professional)
 container.bind(TYPES.CreateProfessionalUseCase).to(CreateProfessionalUseCase);
@@ -79,6 +106,26 @@ container.bind(TYPES.InitializeAdminUseCase).to(InitializeAdminUseCase);
 container.bind(TYPES.GetProfessionalByCpfUseCase).to(GetProfessionalByCpfUseCase);
 container.bind(TYPES.GetProfessionalByNameUseCase).to(GetProfessionalsByNameUseCase);
 container.bind(TYPES.SetAttendanceModeUseCase).to(SetAttendanceModeUseCase);
+container.bind(TYPES.VerifyLocalAdminAccessUseCase).to(VerifyLocalAdminAccessUseCase);
+container.bind(TYPES.CreateProfessionalByLocalAdminUseCase).to(CreateProfessionalByLocalAdminUseCase);
+container.bind(TYPES.CreateProfessionalByGeneralAdminUseCase).to(CreateProfessionalByGeneralAdminUseCase);
+
+
+// Use case bindings (health unit)
+container.bind(TYPES.CreateHealthUnitUseCase).to(CreateHealthUnitUseCase);
+container.bind(TYPES.GetHealthUnitsUseCase).to(GetHealthUnitsUseCase);
+container.bind(TYPES.GetHealthUnitByIdUseCase).to(GetHealthUnitByIdUseCase);
+container.bind(TYPES.UpdateHealthUnitUseCase).to(UpdateHealthUnitUseCase);
+container.bind(TYPES.DeleteHealthUnitUseCase).to(DeleteHealthUnitUseCase);
+container.bind(TYPES.AddProfessionalToHealthUnitUseCase).to(AddProfessionalToHealthUnitUseCase);
+container.bind(TYPES.RemoveProfessionalFromHealthUnitUseCase).to(RemoveProfessionalFromHealthUnitUseCase);
+
+// Use case bindings (CID)
+container.bind(TYPES.CreateCidUseCase).to(CreateCidUseCase);
+container.bind(TYPES.GetCidsUseCase).to(GetCidsUseCase);
+container.bind(TYPES.SearchCidUseCase).to(SearchCidUseCase);
+container.bind(TYPES.UpdateCidUseCase).to(UpdateCidUseCase);
+container.bind(TYPES.DeleteCidUseCase).to(DeleteCidUseCase);
 
 // Use case bindings (patient)
 container.bind(TYPES.CreatePatientUseCase).to(CreatePatientUseCase);
