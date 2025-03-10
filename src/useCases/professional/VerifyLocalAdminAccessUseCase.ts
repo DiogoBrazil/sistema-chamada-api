@@ -1,6 +1,8 @@
 import { injectable, inject } from "inversify";
 import { ProfessionalRepository } from "../../repositories/ProfessionalRepository";
 import { TYPES } from "../../types";
+import { ProfileType } from "../../constants/profilesTypes";
+
 
 @injectable()
 export class VerifyLocalAdminAccessUseCase {
@@ -21,7 +23,7 @@ export class VerifyLocalAdminAccessUseCase {
     }
     
     // Verificar se o profissional é um administrador local
-    if (professional.profile !== 'LOCAL_ADMINISTRATOR') {
+    if (professional.profile !== ProfileType.LOCAL_ADMINISTRATOR) {
       return false;
     }
     

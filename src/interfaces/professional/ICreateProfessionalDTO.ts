@@ -6,9 +6,12 @@ export interface ICreateProfessionalDTO {
   profile: string;
   password: string;
   attendanceMode?: string;
+  currentOffice?: number;
   phone?: string;
   sex?: string;
   email?: string;
+  active: boolean;
+  cityId: number;
   address?: IAddressDTO;
   healthUnitId?: number;
 }

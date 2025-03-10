@@ -8,6 +8,7 @@ export const TYPES = {
   HealthUnitRepository: Symbol.for("HealthUnitRepository"),
   HealthUnitAddressRepository: Symbol.for("HealthUnitAddressRepository"),
   CidRepository: Symbol.for("CidRepository"),
+  CityRepository: Symbol.for("CityRepository"),
   
   // Use cases (professional)
   CreateProfessionalUseCase: Symbol.for("CreateProfessionalUseCase"),
@@ -21,6 +22,19 @@ export const TYPES = {
   VerifyLocalAdminAccessUseCase: Symbol.for("VerifyLocalAdminAccessUseCase"),
   CreateProfessionalByLocalAdminUseCase: Symbol.for("CreateProfessionalByLocalAdminUseCase"),
   CreateProfessionalByGeneralAdminUseCase: Symbol.for("CreateProfessionalByGeneralAdminUseCase"),
+
+  // Use cases (city)
+  CreateCityUseCase: Symbol.for("CreateCityUseCase"),
+  GetCitiesUseCase: Symbol.for("GetCitiesUseCase"),
+  GetCityByIdUseCase: Symbol.for("GetCityByIdUseCase"),
+  UpdateCityUseCase: Symbol.for("UpdateCityUseCase"),
+  DeleteCityUseCase: Symbol.for("DeleteCityUseCase"),
+  SearchCitiesUseCase: Symbol.for("SearchCitiesUseCase"),
+
+  //Use casees (report)
+  GetHealthUnitAttendanceReportUseCase: Symbol.for("GetHealthUnitAttendanceReportUseCase"),
+  GetAttendanceReportUseCase: Symbol.for("GetAttendanceReportUseCase"),
+  GetCityAttendanceReportUseCase: Symbol.for("GetCityAttendanceReportUseCase"),
 
 
   // Use cases (health unit)
@@ -78,5 +92,4 @@ export const TYPES = {
   LoginProfessionalUseCase: Symbol.for("LoginProfessionalUseCase"),
   SetOfficeUseCase: Symbol.for("SetOfficeUseCase"),
   
-  GetAttendanceReportUseCase: Symbol.for("GetAttendanceReportUseCase"),
 };

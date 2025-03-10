@@ -10,11 +10,11 @@ import { DeleteCidUseCase } from "../useCases/cid/DeleteCidUseCase";
 export class CidController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Verificar se o usuário é admin ou médico
+      // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
+      if (!['GENERAL_ADMINISTRATOR',].includes(userProfile || '')) {
         res.status(403).json({
-          message: "Only administrators or doctors can create CID records",
+          message: "Only general administrators can create CID records",
           data: null,
           status_code: 403
         });
@@ -45,6 +45,17 @@ export class CidController {
 
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+       // Verificar se o usuário é admin ou médico
+       const userProfile = req.user?.profile;
+       if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
+         res.status(403).json({
+           message: "Only administrators or doctors can get CIDs",
+           data: null,
+           status_code: 403
+         });
+         return;
+       }
+
       const page = parseInt(req.params.page) || 1;
       const useCase = container.get<GetCidsUseCase>(TYPES.GetCidsUseCase);
       const result = await useCase.execute(page);
@@ -66,6 +77,17 @@ export class CidController {
 
   async search(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+       // Verificar se o usuário é admin ou médico
+       const userProfile = req.user?.profile;
+       if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
+         res.status(403).json({
+           message: "Only administrators or doctors can search CIDs",
+           data: null,
+           status_code: 403
+         });
+         return;
+       }
+
       const searchTerm = req.params.term;
       
       if (!searchTerm || searchTerm.trim().length < 2) {
@@ -92,11 +114,11 @@ export class CidController {
 
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Verificar se o usuário é admin ou médico
+      // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
+      if (!['GENERAL_ADMINISTRATOR',].includes(userProfile || '')) {
         res.status(403).json({
-          message: "Only administrators or doctors can update CID records",
+          message: "Only general administrators can update CID records",
           data: null,
           status_code: 403
         });
@@ -144,14 +166,15 @@ export class CidController {
     try {
       // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'ADMINISTRATOR') {
+      if (!['GENERAL_ADMINISTRATOR',].includes(userProfile || '')) {
         res.status(403).json({
-          message: "Only administrators can delete CID records",
+          message: "Only general administrators can delete CID records",
           data: null,
           status_code: 403
         });
         return;
       }
+
 
       const id = Number(req.params.id);
       if (isNaN(id)) {

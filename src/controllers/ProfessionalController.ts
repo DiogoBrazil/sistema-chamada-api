@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { container } from "../container";
 import { TYPES } from "../types";
-import { CreateProfessionalUseCase } from "../useCases/professional/CreateProfessionalUseCase";
 import { GetProfessionalsUseCase } from "../useCases/professional/GetProfessionalsUseCase";
 import { GetProfessionalByIdUseCase } from "../useCases/professional/GetProfessionalByIdUseCase";
 import { UpdateProfessionalUseCase } from "../useCases/professional/UpdateProfessionalByIdUseCase";
@@ -19,7 +18,7 @@ export class ProfessionalController {
       const userProfile = req.user?.profile;
       const userId = req.user?.id;
       
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
+      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
         res.status(403).json({
           message: "Only administrators can create professionals",
           data: null,
@@ -181,13 +180,19 @@ export class ProfessionalController {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'ADMINISTRATOR') {
+      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
         res.status(403).json({
           message: "Only administrators can update professionals",
           data: null,
           status_code: 403
         });
         return;
+      }
+
+      const adminId = req.user?.id;
+
+      if (!adminId) {
+        throw new Error("Unauthenticated user");
       }
 
       const id = Number(req.params.id);
@@ -201,7 +206,7 @@ export class ProfessionalController {
       }
 
       const useCase = container.get<UpdateProfessionalUseCase>(TYPES.UpdateProfessionalUseCase);
-      const result = await useCase.execute(id, req.body);
+      const result = await useCase.execute(id, req.body, adminId, userProfile);
       
       res.status(200).json({
         message: "Professional updated successfully",
@@ -213,7 +218,7 @@ export class ProfessionalController {
         const errorMessages: { [key: string]: number } = {
           "Professional not found": 404,
           "CPF already in use": 400,
-          "Invalid profile. Only 'ADMINISTRATOR', 'DOCTOR' or 'RECEPTIONIST' are allowed": 400
+          "Invalid profile. Only 'GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR','DOCTOR', 'NURSE, 'NURSING_TECHNICIAN', 'ODONTOLOGIST', 'ACS' or 'RECEPTIONIST' are allowed": 400
         };
 
         const statusCode = errorMessages[error.message] || 500;
@@ -232,7 +237,7 @@ export class ProfessionalController {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'ADMINISTRATOR') {
+      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
         res.status(403).json({
           message: "Only administrators can delete professionals",
           data: null,
@@ -251,8 +256,19 @@ export class ProfessionalController {
         return;
       }
 
+      const adminId = req.user?.id;
+
+      if (!adminId) {
+        res.status(403).json({
+          message: "Unauthecated user",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
       const useCase = container.get<DeleteProfessionalUseCase>(TYPES.DeleteProfessionalUseCase);
-      await useCase.execute(id);
+      await useCase.execute(id, adminId, userProfile);
       
       res.status(200).json({
         message: "Professional deleted successfully",

@@ -1,6 +1,7 @@
 import { injectable, inject } from "inversify";
 import { HealthUnitRepository } from "../../repositories/HealthUnitRepository";
 import { HealthUnitAddressRepository } from "../../repositories/HealthUnitAddressRepository";
+import { CityRepository } from "../../repositories/CityRepository";
 import { TYPES } from "../../types";
 import { HealthUnit } from "@prisma/client";
 import { ICreateHealthUnitDTO } from "../../interfaces/healthUnit/ICreateHealthUnitDTO";
@@ -9,13 +10,16 @@ import { ICreateHealthUnitDTO } from "../../interfaces/healthUnit/ICreateHealthU
 export class CreateHealthUnitUseCase {
   private healthUnitRepository: HealthUnitRepository;
   private healthUnitAddressRepository: HealthUnitAddressRepository;
+  private cityRepository: CityRepository;
   
   constructor(
     @inject(TYPES.HealthUnitRepository) healthUnitRepository: HealthUnitRepository,
-    @inject(TYPES.HealthUnitAddressRepository) healthUnitAddressRepository: HealthUnitAddressRepository
+    @inject(TYPES.HealthUnitAddressRepository) healthUnitAddressRepository: HealthUnitAddressRepository,
+    @inject(TYPES.CityRepository) cityRepository: CityRepository
   ) {
     this.healthUnitRepository = healthUnitRepository;
     this.healthUnitAddressRepository = healthUnitAddressRepository;
+    this.cityRepository = cityRepository
   }
   
   async execute(data: ICreateHealthUnitDTO): Promise<HealthUnit> {
@@ -25,22 +29,24 @@ export class CreateHealthUnitUseCase {
       throw new Error("CNPJ already in use");
     }
     
+    // Verificar se o ID da cidade informada existe
+    const cityExists = await this.cityRepository.getCityById(data.cityId);
+
+    if (!cityExists) {
+      throw new Error("City not found");
+    }
+
     // Separa os dados do endereço da unidade
     const { address, ...healthUnitData } = data;
     
-    // Cria a unidade de saúde
-    const healthUnit = await this.healthUnitRepository.createHealthUnit(healthUnitData);
-    
-    // Se um endereço foi fornecido, adiciona-o
     if (address) {
       // Validação básica de endereço
-      if (!address.street || !address.city || !address.state || !address.zipCode) {
-        throw new Error("Street, city, state and zipCode are required for address");
+      if (!address.street || !address.neighborhood || !address.zipCode) {
+        throw new Error("Street, neighborhood and zipCode are required for address");
       }
-      
-      await this.healthUnitAddressRepository.createAddress(healthUnit.id, address);
+      return await this.healthUnitRepository.createHealthUnit(address, healthUnitData);
     }
     
-    return healthUnit;
+    return await this.healthUnitRepository.createHealthUnit(null, healthUnitData);
   }
 }

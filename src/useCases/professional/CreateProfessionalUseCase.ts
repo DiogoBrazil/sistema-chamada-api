@@ -55,19 +55,27 @@ export class CreateProfessionalUseCase {
     const { address, ...professionalData } = data;
     
     const hashedPassword = await argon2.hash(data.password);
-    
-    const professional = await this.professionalRepository.createProfessional({
+
+    const professionalDataWithHashedPassword = {
       ...professionalData,
       password: hashedPassword
-    });
+    };
     
+       
     if (address) {
       if (!address.street || !address.city || !address.state || !address.number) {
         throw new Error("Street, city, state and number are required for address");
       }
       
-      await this.professionalAddressRepository.createAddress(professional.id, address);
+      const professional = await this.professionalRepository.createProfessional(address, professionalDataWithHashedPassword);
+
+      // Remove a senha antes de retornar
+      const { password, ...result } = professional;
+      return result;
     }
+
+    const professional = await this.professionalRepository.createProfessional(null, professionalDataWithHashedPassword);
+
     
     // Remove a senha antes de retornar
     const { password, ...result } = professional;

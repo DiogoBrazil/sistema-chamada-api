@@ -1,6 +1,8 @@
 import { injectable } from "inversify";
 import { PrismaClient, Patient, AttendanceStatus } from "@prisma/client";
 import { IPaginatedResult } from "../interfaces/patient/IPaginatedResult";
+import { ICreatePatientDTO } from "../interfaces/patient/ICreatePatientDTO";
+import { IAddressDTO } from "../interfaces/address/IAddressDTO";
 
 @injectable()
 export class PatientRepository {
@@ -11,16 +13,14 @@ export class PatientRepository {
     this.prisma = new PrismaClient();
   }
   
-  async createPatient(data: {
-    fullName: string;
-    socialName: string;  
-    cpf: string;
-    birthDate: string;
-    phone?: string;      
-    sex?: string;
-    race?: string;
-  }): Promise<Patient> {
-    return this.prisma.patient.create({ data });
+  async createPatient(address: any, patientData: ICreatePatientDTO): Promise<Patient> {
+    return this.prisma.$transaction(async (tx) => {
+      const patient = await tx.patient.create({ data: patientData });
+      if (address) {
+        await tx.patientAddress.create({ data: { ...address, patientId: patient.id } });
+      }
+      return patient;
+    });
   }
   
   async getPatients(page: number): Promise<IPaginatedResult<Patient>> {

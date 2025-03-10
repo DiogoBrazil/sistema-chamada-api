@@ -4,5 +4,7 @@ export interface IGetAttendanceReportDTO {
     startTime: string;
     endDate: string;
     endTime: string;
+    healthUnitId: number;
+    cityId: number;
   }
   

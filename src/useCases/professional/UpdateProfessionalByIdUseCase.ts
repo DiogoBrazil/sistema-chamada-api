@@ -4,18 +4,8 @@ import { ProfessionalAddressRepository } from "../../repositories/ProfessionalAd
 import { TYPES } from "../../types";
 import { Professional } from "@prisma/client";
 import argon2 from "argon2";
-import { IAddressDTO } from "../../interfaces/address/IAddressDTO";
+import { IUpdateProfessionalDTO } from "../../interfaces/professional/IUpdateProfessionalDTO";
 
-interface UpdateProfessionalDTO {
-  fullName?: string;
-  cpf?: string;
-  profile?: 'ADMINISTRATOR' | 'DOCTOR' | 'RECEPTIONIST' | 'NURSE' | 'NURSING_TECHNICIAN' | 'ACS' | 'ODONTOLOGIST';
-  password?: string;
-  currentOffice?: number | null;
-  phone?: string;
-  sex?: string;
-  address?: IAddressDTO;
-}
 
 @injectable()
 export class UpdateProfessionalUseCase {
@@ -30,15 +20,38 @@ export class UpdateProfessionalUseCase {
     this.professionalAddressRepository = professionalAddressRepository;
   }
   
-  async execute(id: number, data: UpdateProfessionalDTO): Promise<Omit<Professional, 'password'>> {
+  async execute(id: number, data: IUpdateProfessionalDTO, adminId: number, userProfile: string): Promise<Omit<Professional, 'password'>> {
     
     const professionalExists = await this.professionalRepository.getProfessionalById(id);
     if (!professionalExists) {
       throw new Error("Professional not found");
     }
 
+    // Validação de permissão baseada no perfil
+    if (userProfile === 'GENERAL_LOCAL_ADMINISTRATOR') {
+      const admin = await this.professionalRepository.getProfessionalById(adminId);
+      if (!admin) {
+        throw new Error("Admin not found");
+      }
+      if (admin.cityId !== professionalExists.cityId) {
+        throw new Error("You can only update professionals from your city");
+      }
+    } else if (userProfile === 'LOCAL_ADMINISTRATOR') {
+      const adminHealthUnits = await this.professionalRepository.getAdminHealthUnits(adminId);
+      const professionalHealthUnits = await this.professionalRepository.getAdminHealthUnits(id);
+      
+      const hasSharedUnit = professionalHealthUnits.some(unit => 
+        adminHealthUnits.some(adminUnit => adminUnit.id === unit.id)
+      );
+      
+      if (!hasSharedUnit) {
+        throw new Error("You can only update professionals from your health unit");
+      }
+    }
+
     const allowedProfiles = [
       "GENERAL_ADMINISTRATOR",
+      "GENERAL_LOCAL_ADMINISTRATOR",
       "LOCAL_ADMINISTRATOR", 
       "DOCTOR", 
       "RECEPTIONIST", 
@@ -49,10 +62,9 @@ export class UpdateProfessionalUseCase {
     ];
 
     if (data.profile && !allowedProfiles.includes(data.profile)) {
-      throw new Error("Invalid profile. Only 'GENERAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'RECEPTIONIST', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST', or 'ACS' are allowed.");
+      throw new Error("Invalid profile. Only 'GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'RECEPTIONIST', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST', or 'ACS' are allowed.");
     }
 
-    // Se o CPF foi fornecido, verifica se já existe em outro profissional
     if (data.cpf) {
       const professionalWithCpf = await this.professionalRepository.getProfessionalByCpf(data.cpf);
       if (professionalWithCpf && professionalWithCpf.id !== id) {
@@ -60,7 +72,6 @@ export class UpdateProfessionalUseCase {
       }
     }
 
-    // Separa os dados do endereço do profissional
     const { address, ...professionalData } = data;
 
     let updateProfessionalData = { ...professionalData };
@@ -78,15 +89,12 @@ export class UpdateProfessionalUseCase {
       }
       
       if (!currentAddressId) {
-        // Se não houver endereço, cria um novo
         await this.professionalAddressRepository.createAddress(id, address);
       } else {
-        // Se houver endereço, atualiza
         await this.professionalAddressRepository.updateAddress(currentAddressId, address);
       }
     }
 
-    
     const { password, ...result } = professional;
     return result;
   }

@@ -11,6 +11,16 @@ import { ProfessionalAddressRepository } from "./repositories/ProfessionalAddres
 import { HealthUnitRepository } from "./repositories/HealthUnitRepository";
 import { HealthUnitAddressRepository } from "./repositories/HealthUnitAddressRepository";
 import { CidRepository } from "./repositories/CidRepository";
+import { CityRepository } from "./repositories/CityRepository";
+
+
+// Use cases (city) - Novos
+import { CreateCityUseCase } from "./useCases/city/CreateCityUseCase";
+import { GetCitiesUseCase } from "./useCases/city/GetCitiesUseCase";
+import { GetCityByIdUseCase } from "./useCases/city/GetCityByIdUseCase";
+import { UpdateCityUseCase } from "./useCases/city/UpdateCityUseCase";
+import { DeleteCityUseCase } from "./useCases/city/DeleteCityUseCase";
+import { SearchCitiesUseCase } from "./useCases/city/SearchCitiesUseCase";
 
 // Use cases (professional)
 import { CreateProfessionalUseCase } from "./useCases/professional/CreateProfessionalUseCase";
@@ -81,6 +91,10 @@ import { UpdateProfessionalAddressUseCase } from "./useCases/address/professiona
 import { DeleteProfessionalAddressUseCase } from "./useCases/address/professional/DeleteProfessionalAddressUseCase";
 import { CreateProfessionalByLocalAdminUseCase } from "./useCases/professional/CreateProfessionalByLocalAdminUseCase";
 
+import { GetCityAttendanceReportUseCase } from "./useCases/resports/GetCityAttendanceReportUseCase";
+import { GetHealthUnitAttendanceReportUseCase } from "./useCases/resports/GetHealthUnitAttendanceReportUseCase";
+
+
 
 const container = new Container();
 
@@ -93,6 +107,20 @@ container.bind(TYPES.ProfessionalAddressRepository).to(ProfessionalAddressReposi
 container.bind(TYPES.HealthUnitRepository).to(HealthUnitRepository).inSingletonScope();
 container.bind(TYPES.HealthUnitAddressRepository).to(HealthUnitAddressRepository).inSingletonScope();
 container.bind(TYPES.CidRepository).to(CidRepository).inSingletonScope();
+container.bind(TYPES.CityRepository).to(CityRepository).inSingletonScope();
+
+// Use case bindings (city) - Novos
+container.bind(TYPES.CreateCityUseCase).to(CreateCityUseCase);
+container.bind(TYPES.GetCitiesUseCase).to(GetCitiesUseCase);
+container.bind(TYPES.GetCityByIdUseCase).to(GetCityByIdUseCase);
+container.bind(TYPES.UpdateCityUseCase).to(UpdateCityUseCase);
+container.bind(TYPES.DeleteCityUseCase).to(DeleteCityUseCase);
+container.bind(TYPES.SearchCitiesUseCase).to(SearchCitiesUseCase);
+
+// Use case bindings (reports) - Novos
+container.bind(TYPES.GetAttendanceReportUseCase).to(GetAttendanceReportUseCase);
+container.bind(TYPES.GetHealthUnitAttendanceReportUseCase).to(GetHealthUnitAttendanceReportUseCase);
+
 
 // Use case bindings (professional)
 container.bind(TYPES.CreateProfessionalUseCase).to(CreateProfessionalUseCase);

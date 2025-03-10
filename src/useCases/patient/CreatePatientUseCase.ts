@@ -25,17 +25,16 @@ export class CreatePatientUseCase {
 
     // Separa os dados do endereço do paciente
     const { address, ...patientData } = data;
-    
-    const patient = await this.patientRepository.createPatient(patientData);
-    
+
     if (address) {
       if (!address.street || !address.city || !address.state || !address.number) {
         throw new Error("Street, city, state and number are required for address");
       }
       
-      await this.patientAddressRepository.createAddress(patient.id, address);
+      return await this.patientRepository.createPatient(address, patientData);
     }
     
-    return patient;
+    return await this.patientRepository.createPatient(null,patientData);
+    
   }
 }

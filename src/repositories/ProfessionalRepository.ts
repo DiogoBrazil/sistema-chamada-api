@@ -1,7 +1,9 @@
 import { injectable } from "inversify";
 import { PrismaClient, Professional, AttendanceStatus } from "@prisma/client";
 import { IPaginatedProfessionalResult } from "../interfaces/professional/IPaginatedProfessionalResult";
-import { IAddressDTO } from "../interfaces/address/IAddressDTO";
+import { ICreateProfessionalDTO } from "../interfaces/professional/ICreateProfessionalDTO";
+import { IUpdateProfessionalDTO } from "../interfaces/professional/IUpdateProfessionalDTO";
+import { ProfessionalWithRelations } from "../interfaces/professional/IProfessionalWithRelations";
 
 @injectable()
 export class ProfessionalRepository {
@@ -12,18 +14,16 @@ export class ProfessionalRepository {
     this.prisma = new PrismaClient();
   }
   
-  async createProfessional(data: {
-    fullName: string;
-    cpf: string;
-    profile: string;
-    password: string;
-    phone?: string;
-    sex?: string;
-    email?: string;
-    attendanceMode?: string;
-  }): Promise<Professional> {
-    return this.prisma.professional.create({ data });
-  }
+  
+  async createProfessional(address: any, professionalData: ICreateProfessionalDTO): Promise<Professional> {
+      return this.prisma.$transaction(async (tx) => {
+        const professional = await tx.professional.create({ data: professionalData });
+        if (address) {
+          await tx.professionalAddress.create({ data: { ...address, professionalId: professional.id } });
+        }
+        return professional;
+      });
+    }
 
   // Método para buscar todos os profissionais sem paginação
   async getAllProfessionals(): Promise<Professional[]> {
@@ -49,7 +49,8 @@ export class ProfessionalRepository {
           addresses: {
             where: { isMain: true },
             take: 1
-          }
+          },
+          healthUnit: true
         }
       }),
       this.prisma.professional.count()
@@ -87,13 +88,31 @@ export class ProfessionalRepository {
     return professionals.map(({ password, ...rest }) => rest);
   }
   
-  async getProfessionalById(id: number): Promise<Professional | null> {
+  async getProfessionalById(id: number): Promise<ProfessionalWithRelations | null> {
     return this.prisma.professional.findUnique({ 
       where: { id },
       include: {
-        addresses: true
+        addresses: true,
+        healthUnit: true
       } 
     });
+  }
+
+  async isProfessionalLinkedToCity(professionalId: number, cityId: number): Promise<boolean> {
+    const professional = await this.prisma.professional.findUnique({
+      where: { id: professionalId },
+      include: {
+        healthUnit: {
+          select: { cityId: true }
+        }
+      }
+    });
+  
+    if (!professional || !professional.healthUnit || professional.healthUnit.length === 0) {
+      return false;
+    }
+  
+    return professional.healthUnit.some(unit => unit.cityId === cityId);
   }
 
   async getProfessionalByEmail(email: string): Promise<Professional | null> {
@@ -140,16 +159,7 @@ export class ProfessionalRepository {
     });
   }
 
-  async updateProfessional(id: number, data: {
-    fullName?: string;
-    cpf?: string;
-    profile?: string;
-    password?: string;
-    currentOffice?: number | null;
-    attendanceMode?: string;
-    phone?: string;
-    sex?: string;
-  }): Promise<Professional> {
+  async updateProfessional(id: number, data: IUpdateProfessionalDTO): Promise<Professional> {
     return this.prisma.professional.update({
       where: { id },
       data

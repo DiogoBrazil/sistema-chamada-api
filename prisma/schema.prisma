@@ -7,6 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model City {
+  id       Int      @id @default(autoincrement())
+  name     String
+  state    String
+  healthUnits HealthUnit[]
+  professionals Professional[]
+}
+
 model Patient {
   id           Int               @id @default(autoincrement())
   fullName     String
@@ -47,6 +55,8 @@ model Professional {
   sex               String? 
   email             String?
   active            Boolean                 @default(true)
+  city              City                    @relation(fields: [cityId], references: [id])
+  cityId            Int
   healthUnit        HealthUnit[]        
   addresses         ProfessionalAddress[]   
   attendances       Attendance[]
@@ -73,8 +83,11 @@ model HealthUnit {
   name         String
   cnpj         String    @unique
   phone        String?
+  city         City      @relation(fields: [cityId], references: [id])
+  cityId       Int
   addresses    HealthUnitAddress[]
   professionals Professional[]
+  attendances  Attendance[]
   healthUnitFlowAudit HealthUnitFlowAudit[]
 }
 
@@ -84,8 +97,6 @@ model HealthUnitAddress {
   number       String?
   complement   String?
   neighborhood String?
-  city         String
-  state        String
   zipCode      String?
   isMain       Boolean      @default(true) 
   healthUnit   HealthUnit   @relation(fields: [healthUnitId], references: [id], onDelete: Cascade)
@@ -118,6 +129,8 @@ model Attendance {
   professionalId  Int?
   officeNumber    Int?
   history         AttendanceHistory[]
+  healthUnit      HealthUnit           @relation(fields: [healthUnitId], references: [id])
+  healthUnitId    Int
 }
 
 model AttendanceHistory {

@@ -1,6 +1,8 @@
 import { injectable } from "inversify";
-import { PrismaClient, HealthUnit, HealthUnitFlowAudit, FlowAction, AttendanceStage, Professional } from "@prisma/client";
+import { PrismaClient, HealthUnit, HealthUnitFlowAudit, FlowAction, AttendanceStage, Professional, City } from "@prisma/client";
 import { IPaginatedResult } from "../interfaces/patient/IPaginatedResult";
+import { ICreateHealthUnitDTO } from "../interfaces/healthUnit/ICreateHealthUnitDTO";
+import { IUpdateHealthUnitDTO } from "../interfaces/healthUnit/IUpdateHealthUnitDTO";
 
 
 @injectable()
@@ -12,20 +14,54 @@ export class HealthUnitRepository {
     this.prisma = new PrismaClient();
   }
   
-  async createHealthUnit(data: {
-    name: string;
-    cnpj: string;
-    phone?: string;
-  }): Promise<HealthUnit> {
-    return this.prisma.healthUnit.create({ data });
+  async createHealthUnit(addrees: any, healthUnitData: ICreateHealthUnitDTO): Promise<HealthUnit> {
+    return this.prisma.$transaction(async (tx) => {
+      const healthUnit = await tx.healthUnit.create({ data: healthUnitData });
+      if (addrees) {
+        await tx.healthUnitAddress.create({ data: { ...addrees, healthUnitId: healthUnit.id } });
+      }
+      return healthUnit;
+    });
   }
   
-  async getHealthUnits(page: number): Promise<IPaginatedResult<HealthUnit>> {
+  async getAllHealthUnits(page: number): Promise<IPaginatedResult<HealthUnit>> {
     const skip = (page - 1) * this.itemsPerPage;
     
     // Busca dados paginados e total de registros em paralelo
     const [healthUnits, totalItems] = await Promise.all([
       this.prisma.healthUnit.findMany({
+        skip,
+        take: this.itemsPerPage,
+        orderBy: {
+          name: 'asc'
+        },
+        include: {
+          addresses: {
+            where: { isMain: true },
+            take: 1
+          }
+        }
+      }),
+      this.prisma.healthUnit.count()
+    ]);
+
+    const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+
+    return {
+      data: healthUnits,
+      totalPages,
+      currentPage: page,
+      totalItems
+    };
+  }
+
+  async getHealthUnitsByCity(page: number, cityId: number): Promise<IPaginatedResult<HealthUnit>> {
+    const skip = (page - 1) * this.itemsPerPage;
+    
+    // Busca dados paginados e total de registros em paralelo
+    const [healthUnits, totalItems] = await Promise.all([
+      this.prisma.healthUnit.findMany({
+        where: { cityId },
         skip,
         take: this.itemsPerPage,
         orderBy: {
@@ -73,6 +109,39 @@ export class HealthUnitRepository {
     });
   }
 
+  async getHealthUnitsByCityId(cityId: number): Promise<HealthUnit[]> {
+    return this.prisma.healthUnit.findMany({
+      where: { cityId },
+      include: {
+        addresses: {
+          where: { isMain: true },
+          take: 1
+        }
+      }
+    });
+  }
+
+  async getCityById(id: number): Promise<{ name: string, state: string } | null> {
+    return this.prisma.city.findUnique({
+      where: { id },
+      select: { name: true, state: true }
+    });
+  }
+
+  async getHealthUnitWithCity(id: number): Promise<(HealthUnit & { city: City }) | null> {
+    return this.prisma.healthUnit.findUnique({
+      where: { id },
+      include: { 
+        city: true,
+        professionals: true,
+        addresses: {
+          where: { isMain: true },
+          take: 1
+        }
+      }
+    });
+  }
+
   async deleteHealthUnit(id: number): Promise<HealthUnit | null> {
     // Verificar se a unidade tem profissionais associados
     const healthUnit = await this.prisma.healthUnit.findUnique({
@@ -89,11 +158,7 @@ export class HealthUnitRepository {
     });
   }
 
-  async updateHealthUnit(id: number, data: {
-    name?: string;
-    cnpj?: string;
-    phone?: string;
-  }): Promise<HealthUnit> {
+  async updateHealthUnit(id: number, data: IUpdateHealthUnitDTO): Promise<HealthUnit> {
     return this.prisma.healthUnit.update({
       where: { id },
       data,

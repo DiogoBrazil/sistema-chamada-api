@@ -15,9 +15,9 @@ import { GetVaccineAttendancesUseCase } from "../useCases/attendance/GetVaccineA
 export class AttendanceController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { patientId, attendanceStage } = req.body;
+      const data = req.body;
       const useCase = container.get<CreateAttendanceUseCase>(TYPES.CreateAttendanceUseCase);
-      const result = await useCase.execute(patientId, attendanceStage);
+      const result = await useCase.execute(data);
       res.status(201).json({
         message: "Attendance created successfully",
         data: result,
@@ -32,7 +32,7 @@ export class AttendanceController {
     try {
       // Verifica se o usuário tem um perfil permitido
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'DOCTOR', 'NURSE'].includes(userProfile || '')) {
+      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'NURSE'].includes(userProfile || '')) {
         res.status(403).json({
           message: "Only administrators, doctors or nurses can get all attendances",
           data: null,
@@ -40,9 +40,9 @@ export class AttendanceController {
         });
         return;
       }
-
+      const data = req.body;
       const useCase = container.get<GetAttendancesUseCase>(TYPES.GetAttendancesUseCase);
-      const result = await useCase.execute();
+      const result = await useCase.execute(data);
       res.status(200).json({
         message: "Attendances retrieved successfully",
         data: result,
@@ -55,19 +55,33 @@ export class AttendanceController {
 
   async getTriage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+
+      const healthUnitId = Number(req.params.healthUnitId);
+
       // Verifica se o usuário tem um perfil permitido
+      const professionalId = req.user?.id;
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'NURSING_TECHNICIAN', 'NURSE'].includes(userProfile || '')) {
+
+      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR','NURSING_TECHNICIAN', 'NURSE'].includes(userProfile || '')) {
         res.status(403).json({
-          message: "Only administrators, nursing technicians or nurses can get triage attendances",
+          message: "Only administrators, doctors, nursing technicians or nurses can get triage attendances",
           data: null,
           status_code: 403
         });
         return;
       }
 
+      if (!professionalId || !userProfile) {
+        res.status(400).json({
+          message: "Unauthecated user",
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
+
       const useCase = container.get<GetTriageAttendancesUseCase>(TYPES.GetTriageAttendancesUseCase);
-      const result = await useCase.execute();
+      const result = await useCase.execute(healthUnitId, professionalId);
       res.status(200).json({
         message: "Triage attendances retrieved successfully",
         data: result,
@@ -80,19 +94,32 @@ export class AttendanceController {
 
   async getMedicalConsultation(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const healthUnitId = Number(req.params.healthUnitId);
+
       // Verifica se o usuário tem um perfil permitido
+      const professionalId = req.user?.id;
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
+
+      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
         res.status(403).json({
-          message: "Only administrators or doctors can get medical consultation attendances",
+          message: "Only administrators or doctors can get medical attendances",
           data: null,
           status_code: 403
         });
         return;
       }
 
+      if (!professionalId || !userProfile) {
+        res.status(400).json({
+          message: "Unauthecated user",
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
+
       const useCase = container.get<GetMedicalConsultationAttendancesUseCase>(TYPES.GetMedicalConsultationAttendancesUseCase);
-      const result = await useCase.execute();
+      const result = await useCase.execute(healthUnitId, professionalId);
       res.status(200).json({
         message: "Medical consultation attendances retrieved successfully",
         data: result,
@@ -105,21 +132,111 @@ export class AttendanceController {
 
   async getNursingConsultation(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const healthUnitId = Number(req.params.healthUnitId);
+
       // Verifica se o usuário tem um perfil permitido
+      const professionalId = req.user?.id;
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'NURSE'].includes(userProfile || '')) {
+
+      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'NURSE'].includes(userProfile || '')) {
         res.status(403).json({
-          message: "Only administrators or nurses can get nursing consultation attendances",
+          message: "Only administrators, doctors or nurses can get nursing attendances",
           data: null,
           status_code: 403
         });
         return;
       }
 
+      if (!professionalId || !userProfile) {
+        res.status(400).json({
+          message: "Unauthecated user",
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
+
       const useCase = container.get<GetNursingConsultationAttendancesUseCase>(TYPES.GetNursingConsultationAttendancesUseCase);
-      const result = await useCase.execute();
+      const result = await useCase.execute(healthUnitId, professionalId);
       res.status(200).json({
         message: "Nursing consultation attendances retrieved successfully",
+        data: result,
+        status_code: 200
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getDentalConsultation(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const healthUnitId = Number(req.params.healthUnitId);
+
+      // Verifica se o usuário tem um perfil permitido
+      const professionalId = req.user?.id;
+      const userProfile = req.user?.profile;
+
+      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'ODONTOLOGIST'].includes(userProfile || '')) {
+        res.status(403).json({
+          message: "Only administrators or odondologist can get dental attendances",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
+      if (!professionalId || !userProfile) {
+        res.status(400).json({
+          message: "Unauthecated user",
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
+  
+      const useCase = container.get<GetDentalConsultationAttendancesUseCase>(TYPES.GetDentalConsultationAttendancesUseCase);
+      const result = await useCase.execute(healthUnitId, professionalId);
+      res.status(200).json({
+        message: "Dental consultation attendances retrieved successfully",
+        data: result,
+        status_code: 200
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
+  async getVaccine(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const healthUnitId = Number(req.params.healthUnitId);
+
+      // Verifica se o usuário tem um perfil permitido
+      const professionalId = req.user?.id;
+      const userProfile = req.user?.profile;
+
+      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'NURSE', 'NURSING_TECHNICIAN'].includes(userProfile || '')) {
+        res.status(403).json({
+          message: "Only administrators, doctor, nurse or nursing technician can get vaccine attendances",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
+      if (!professionalId || !userProfile) {
+        res.status(400).json({
+          message: "Unauthecated user",
+          data: null,
+          status_code: 400
+        });
+        return;
+      }
+  
+      const useCase = container.get<GetVaccineAttendancesUseCase>(TYPES.GetVaccineAttendancesUseCase);
+      const result = await useCase.execute(healthUnitId, professionalId);
+      res.status(200).json({
+        message: "Vaccine attendances retrieved successfully",
         data: result,
         status_code: 200
       });
@@ -132,30 +249,22 @@ export class AttendanceController {
     try {
       // Verifica se o usuário tem um perfil permitido (ACS não pode chamar pacientes)
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'DOCTOR', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST'].includes(userProfile || '')) {
+      if (!['DOCTOR', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST'].includes(userProfile || '')) {
         res.status(403).json({
-          message: "Only administrators, doctors, nurses, nursing technicians or odontologists can call patients",
+          message: "Only general administrator, doctors, nurses, nursing technicians or odontologists can call patients",
           data: null,
           status_code: 403
         });
         return;
       }
       
-      // Verificação específica para bloquear ACS
-      if (userProfile === 'ACS') {
-        res.status(403).json({
-          message: "Community health agents cannot call patients",
-          data: null,
-          status_code: 403
-        });
-        return;
-      }
    
       const attendanceId = Number(req.params.id);
       const professionalId = req.user?.id;
+
       if (!professionalId) {
         res.status(400).json({
-          message: "Professional ID not found in token",
+          message: "Unauthenticated user",
           data: null,
           status_code: 400
         });
@@ -344,56 +453,6 @@ export class AttendanceController {
       
       res.status(200).json({
         message: `Attendance forwarded to ${formattedStage} successfully`,
-        data: result,
-        status_code: 200
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getDentalConsultation(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // Verifica se o usuário tem um perfil permitido
-      const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'ODONTOLOGIST'].includes(userProfile || '')) {
-        res.status(403).json({
-          message: "Only administrators or odontologists can get dental consultation attendances",
-          data: null,
-          status_code: 403
-        });
-        return;
-      }
-  
-      const useCase = container.get<GetDentalConsultationAttendancesUseCase>(TYPES.GetDentalConsultationAttendancesUseCase);
-      const result = await useCase.execute();
-      res.status(200).json({
-        message: "Dental consultation attendances retrieved successfully",
-        data: result,
-        status_code: 200
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getVaccine(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // Verifica se o usuário tem um perfil permitido
-      const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'NURSE', 'NURSING_TECHNICIAN'].includes(userProfile || '')) {
-        res.status(403).json({
-          message: "Only administrators, nurses or nursing technicians can get vaccine attendances",
-          data: null,
-          status_code: 403
-        });
-        return;
-      }
-  
-      const useCase = container.get<GetVaccineAttendancesUseCase>(TYPES.GetVaccineAttendancesUseCase);
-      const result = await useCase.execute();
-      res.status(200).json({
-        message: "Vaccine attendances retrieved successfully",
         data: result,
         status_code: 200
       });

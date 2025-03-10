@@ -1,31 +1,30 @@
 import { injectable, inject } from "inversify";
 import { HealthUnitRepository } from "../../repositories/HealthUnitRepository";
 import { HealthUnitAddressRepository } from "../../repositories/HealthUnitAddressRepository";
+import { CityRepository } from "../../repositories/CityRepository";
 import { TYPES } from "../../types";
 import { HealthUnit } from "@prisma/client";
 import { IAddressDTO } from "../../interfaces/address/IAddressDTO";
+import { IUpdateHealthUnitDTO } from "../../interfaces/healthUnit/IUpdateHealthUnitDTO";
 
-interface UpdateHealthUnitDTO {
-  name?: string;
-  cnpj?: string;
-  phone?: string;
-  address?: IAddressDTO;
-}
 
 @injectable()
 export class UpdateHealthUnitUseCase {
   private healthUnitRepository: HealthUnitRepository;
   private healthUnitAddressRepository: HealthUnitAddressRepository;
+  private cityRepository: CityRepository;
   
   constructor(
     @inject(TYPES.HealthUnitRepository) healthUnitRepository: HealthUnitRepository,
-    @inject(TYPES.HealthUnitAddressRepository) healthUnitAddressRepository: HealthUnitAddressRepository
+    @inject(TYPES.HealthUnitAddressRepository) healthUnitAddressRepository: HealthUnitAddressRepository,
+    @inject(TYPES.CityRepository) cityRepository: CityRepository
   ) {
     this.healthUnitRepository = healthUnitRepository;
     this.healthUnitAddressRepository = healthUnitAddressRepository;
+    this.cityRepository = cityRepository
   }
   
-  async execute(id: number, data: UpdateHealthUnitDTO): Promise<HealthUnit> {
+  async execute(id: number, data: IUpdateHealthUnitDTO): Promise<HealthUnit> {
     // Verificar se a unidade existe
     const healthUnitExists = await this.healthUnitRepository.getHealthUnitById(id);
     if (!healthUnitExists) {
@@ -40,13 +39,19 @@ export class UpdateHealthUnitUseCase {
       }
     }
 
+    // Verificar se a cidade existe
+    const cityExists = await this.cityRepository.getCityById(data.cityId);
+    if (!cityExists) {
+      throw new Error("City not found");
+    }
+
     // Separar os dados do endereço
     const { address, ...healthUnitData } = data;
 
     // Atualizar o endereço principal, se fornecido
     if (address) {
-      if (!address.street || !address.city || !address.state || !address.zipCode) {
-        throw new Error("Street, city, state and zipCode are required for address");
+      if (!address.street || !address.neighborhood || !address.zipCode) {
+        throw new Error("Street, neighborhood and zipCode are required for address");
       }
       
       const healthUnitAddress = await this.healthUnitAddressRepository.getMainAddressByHealthUnitId(id);

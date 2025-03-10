@@ -24,7 +24,7 @@ export class CreateProfessionalByLocalAdminUseCase {
   
   async execute(adminId: number, data: ICreateProfessionalDTO): Promise<Omit<Professional, "password">> {
     // Verificar se o perfil não é de administrador
-    const restrictedProfiles = ['GENERAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR'];
+    const restrictedProfiles = ['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR'];
     if (restrictedProfiles.includes(data.profile)) {
       throw new Error("Local administrators cannot create administrator profiles");
     }
@@ -35,7 +35,6 @@ export class CreateProfessionalByLocalAdminUseCase {
       throw new Error("Local administrator is not linked to any health unit");
     }
     
-    // Verificar se a unidade específica foi fornecida e se o admin tem acesso a ela
     let healthUnitId: number;
     
     if (data.healthUnitId) {
@@ -47,6 +46,7 @@ export class CreateProfessionalByLocalAdminUseCase {
       healthUnitId = data.healthUnitId;
     } else {
       // Se nenhuma unidade for especificada, usar a primeira unidade do admin
+      // TODO: Caso o admin tenha mais de uma unidade, deve ser possível escolher
       healthUnitId = adminUnits[0].id;
     }
     

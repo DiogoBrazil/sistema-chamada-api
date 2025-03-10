@@ -26,8 +26,6 @@ export class HealthUnitAddressRepository {
         number: addressData.number,
         complement: addressData.complement,
         neighborhood: addressData.neighborhood,
-        city: addressData.city,
-        state: addressData.state,
         zipCode: addressData.zipCode,
         isMain: addressData.isMain !== undefined ? addressData.isMain : true,
       }

@@ -1,7 +1,6 @@
 import { injectable, inject } from "inversify";
 import { PatientRepository } from "../../repositories/PatientRepository";
 import { TYPES } from "../../types";
-import { Patient } from "@prisma/client";
 
 @injectable()
 export class DeletePatientUseCase {
