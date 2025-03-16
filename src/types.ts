@@ -16,6 +16,8 @@ export const TYPES = {
   GetProfessionalByIdUseCase: Symbol.for("GetProfessionalByIdUseCase"),
   DeleteProfessionalUseCase: Symbol.for("DeleteProfessionalUseCase"),
   UpdateProfessionalUseCase: Symbol.for("UpdateProfessionalUseCase"),
+  UpdateProfessionalByLocalAdminUseCase: Symbol.for("UpdateProfessionalByLocalAdminUseCase"),
+  UpdateProfessionalByGeneralAdminUseCase: Symbol.for("UpdateProfessionalByGeneralAdminUseCase"),
   InitializeAdminUseCase: Symbol.for("InitializeAdminUseCase"),
   GetProfessionalByCpfUseCase: Symbol.for("GetProfessionalByCpfUseCase"),
   GetProfessionalByNameUseCase: Symbol.for("GetProfessionalByNameUseCase"),

@@ -24,8 +24,18 @@ export class HealthUnitController {
         return;
       }
 
+      const requestingProfessionalId = req.user?.id;
+      if (!requestingProfessionalId) {
+        res.status(403).json({
+          message: "Only authenticated users can create health units",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
       const useCase = container.get<CreateHealthUnitUseCase>(TYPES.CreateHealthUnitUseCase);
-      const result = await useCase.execute(req.body);
+      const result = await useCase.execute(requestingProfessionalId, userProfile, req.body);
       res.status(201).json({
         message: "Health unit created successfully",
         data: result,

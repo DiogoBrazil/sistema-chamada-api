@@ -5,6 +5,8 @@ import { TYPES } from "../../types";
 import { Professional } from "@prisma/client";
 import { ICreateProfessionalDTO } from "../../interfaces/professional/ICreateProfessionalDTO";
 import { CreateProfessionalUseCase } from "./CreateProfessionalUseCase";
+import { ProfileType } from "../../constants/profilesTypes";
+
 
 @injectable()
 export class CreateProfessionalByLocalAdminUseCase {
@@ -24,7 +26,7 @@ export class CreateProfessionalByLocalAdminUseCase {
   
   async execute(adminId: number, data: ICreateProfessionalDTO): Promise<Omit<Professional, "password">> {
     // Verificar se o perfil não é de administrador
-    const restrictedProfiles = ['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR'];
+    const restrictedProfiles = [String(ProfileType.GENERAL_ADMINISTRATOR), String(ProfileType.GENERAL_LOCAL_ADMINISTRATOR), String(ProfileType.LOCAL_ADMINISTRATOR)];
     if (restrictedProfiles.includes(data.profile)) {
       throw new Error("Local administrators cannot create administrator profiles");
     }
@@ -55,7 +57,7 @@ export class CreateProfessionalByLocalAdminUseCase {
     
     // Criar o profissional
     const professional = await this.createProfessionalUseCase.execute(professionalData);
-    
+
     // Vincular à unidade de saúde
     await this.healthUnitRepository.addProfessionalToHealthUnit(healthUnitId, professional.id);
     

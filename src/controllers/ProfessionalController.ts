@@ -9,6 +9,9 @@ import { GetProfessionalByCpfUseCase } from "../useCases/professional/GetProfess
 import { GetProfessionalsByNameUseCase } from "../useCases/professional/GetProfessionalByNameUseCase";
 import { CreateProfessionalByLocalAdminUseCase } from "../useCases/professional/CreateProfessionalByLocalAdminUseCase";
 import { CreateProfessionalByGeneralAdminUseCase } from "../useCases/professional/CreateProfessionalByGeneralAdminUseCase";
+import { UpdateProfessionalByLocalAdminUseCase } from "../useCases/professional/UpdateProfessionalByLocalAdminUseCase";
+import { UpdateProfessionalByGeneralAdminUseCase } from "../useCases/professional/UpdateProfessionalByGeneralAdminUseCase";
+
 
 export class ProfessionalController {
   
@@ -59,8 +62,17 @@ export class ProfessionalController {
       } else {
         // Admin geral usa o caso de uso dedicado para criar profissionais
         try {
+          if (!userId) {
+            res.status(403).json({
+              message: "Unauthenticated user",
+              data: null,
+              status_code: 403
+            });
+            return;
+          }
+
           const useCase = container.get<CreateProfessionalByGeneralAdminUseCase>(TYPES.CreateProfessionalByGeneralAdminUseCase);
-          const result = await useCase.execute(req.body);
+          const result = await useCase.execute(userProfile, userId, req.body);
           
           res.status(201).json({
             message: "Professional created successfully",
@@ -93,19 +105,30 @@ export class ProfessionalController {
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const page = parseInt(req.params.page) || 1;
-      const useCase = container.get<GetProfessionalsUseCase>(TYPES.GetProfessionalsUseCase);
-      const result = await useCase.execute(page);
-      
-      res.status(200).json({
-        message: "Professionals retrieved successfully",
-        data: result.data,
-        pagination: {
-          currentPage: result.currentPage,
-          totalPages: result.totalPages,
-          totalItems: result.totalItems
-        },
-        status_code: 200
-      });
+
+      const professionalId = req.user?.id;
+      if (!professionalId) {
+        res.status(403).json({
+          message: "Unauthenticated user",
+          data: null,
+          status_code: 403
+        });
+      } else { 
+        const useCase = container.get<GetProfessionalsUseCase>(TYPES.GetProfessionalsUseCase);
+        const data = req.body
+        const result = await useCase.execute(professionalId, data, page);
+        
+        res.status(200).json({
+          message: "Professionals retrieved successfully",
+          data: result.data,
+          pagination: {
+            currentPage: result.currentPage,
+            totalPages: result.totalPages,
+            totalItems: result.totalItems
+          },
+          status_code: 200
+        });
+      }
     } catch (error) {
       next(error);
     }
@@ -114,8 +137,19 @@ export class ProfessionalController {
   async getByCpf(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const cpf = req.params.cpf;
+      const professionalId = req.user?.id;
+      
+      if (!professionalId) {
+        res.status(403).json({
+          message: "Unauthenticated user",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+      
       const useCase = container.get<GetProfessionalByCpfUseCase>(TYPES.GetProfessionalByCpfUseCase);
-      const result = await useCase.execute(cpf);
+      const result = await useCase.execute(cpf, professionalId);
       
       if (!result) {
         res.status(404).json({
@@ -132,6 +166,20 @@ export class ProfessionalController {
         status_code: 200
       });
     } catch (error) {
+      if (error instanceof Error) {
+        const errorMessages: { [key: string]: number } = {
+          "Requesting professional not found": 404,
+          "Professional does not have permission to access this professional data": 403
+        };
+        
+        const statusCode = errorMessages[error.message] || 500;
+        res.status(statusCode).json({
+          message: error.message,
+          data: null,
+          status_code: statusCode
+        });
+        return;
+      }
       next(error);
     }
   }
@@ -139,14 +187,40 @@ export class ProfessionalController {
   async getByName(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const name = req.params.name;
+      const professionalId = req.user?.id;
+      
+      if (!professionalId) {
+        res.status(403).json({
+          message: "Unauthenticated user",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+      
       const useCase = container.get<GetProfessionalsByNameUseCase>(TYPES.GetProfessionalByNameUseCase);
-      const result = await useCase.execute(name);
+      const result = await useCase.execute(name, professionalId);
+      
       res.status(200).json({
         message: "Professionals retrieved successfully",
         data: result,
         status_code: 200
       });
     } catch (error) {
+      if (error instanceof Error) {
+        const errorMessages: { [key: string]: number } = {
+          "Requesting professional not found": 404,
+          "Professional does not have permission to access this professional data": 403
+        };
+        
+        const statusCode = errorMessages[error.message] || 500;
+        res.status(statusCode).json({
+          message: error.message,
+          data: null,
+          status_code: statusCode
+        });
+        return;
+      }
       next(error);
     }
   }
@@ -154,8 +228,19 @@ export class ProfessionalController {
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
+      const professionalId = req.user?.id;
+      
+      if (!professionalId) {
+        res.status(403).json({
+          message: "Unauthenticated user",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+      
       const useCase = container.get<GetProfessionalByIdUseCase>(TYPES.GetProfessionalByIdUseCase);
-      const result = await useCase.execute(id);
+      const result = await useCase.execute(id, professionalId);
       
       if (!result) {
         res.status(404).json({
@@ -172,14 +257,30 @@ export class ProfessionalController {
         status_code: 200
       });
     } catch (error) {
+      if (error instanceof Error) {
+        const errorMessages: { [key: string]: number } = {
+          "Requesting professional not found": 404,
+          "Professional does not have permission to access this professional data": 403
+        };
+        
+        const statusCode = errorMessages[error.message] || 500;
+        res.status(statusCode).json({
+          message: error.message,
+          data: null,
+          status_code: statusCode
+        });
+        return;
+      }
       next(error);
     }
   }
 
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Verifica se o usuário é admin
+      // Verifica o tipo de admin
       const userProfile = req.user?.profile;
+      const adminId = req.user?.id;
+      
       if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
         res.status(403).json({
           message: "Only administrators can update professionals",
@@ -189,10 +290,13 @@ export class ProfessionalController {
         return;
       }
 
-      const adminId = req.user?.id;
-
       if (!adminId) {
-        throw new Error("Unauthenticated user");
+        res.status(403).json({
+          message: "Unauthenticated user",
+          data: null,
+          status_code: 403
+        });
+        return;
       }
 
       const id = Number(req.params.id);
@@ -205,30 +309,88 @@ export class ProfessionalController {
         return;
       }
 
-      const useCase = container.get<UpdateProfessionalUseCase>(TYPES.UpdateProfessionalUseCase);
-      const result = await useCase.execute(id, req.body, adminId, userProfile);
-      
-      res.status(200).json({
-        message: "Professional updated successfully",
-        data: result,
-        status_code: 200
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        const errorMessages: { [key: string]: number } = {
-          "Professional not found": 404,
-          "CPF already in use": 400,
-          "Invalid profile. Only 'GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR','DOCTOR', 'NURSE, 'NURSING_TECHNICIAN', 'ODONTOLOGIST', 'ACS' or 'RECEPTIONIST' are allowed": 400
-        };
-
-        const statusCode = errorMessages[error.message] || 500;
-        res.status(statusCode).json({
-          message: error.message,
-          data: null,
-          status_code: statusCode
-        });
-        return;
+      // Rotas diferentes dependendo do tipo de administrador
+      if (userProfile === 'LOCAL_ADMINISTRATOR') {
+        try {
+          const useCase = container.get<UpdateProfessionalByLocalAdminUseCase>(TYPES.UpdateProfessionalByLocalAdminUseCase);
+          const result = await useCase.execute(adminId, id, req.body);
+          
+          res.status(200).json({
+            message: "Professional updated successfully",
+            data: result,
+            status_code: 200
+          });
+        } catch (error) {
+          if (error instanceof Error) {
+            const errorMessages: { [key: string]: number } = {
+              "Professional not found": 404,
+              "Admin not found": 404,
+              "Local administrator is not linked to any health unit": 400,
+              "You can only update professionals from your health unit": 403,
+              "Local administrators cannot update administrator profiles": 403,
+              "Local administrators cannot update to administrator profiles": 403,
+              "Local administrator does not have access to the specified health unit": 403,
+              "CPF already in use": 400,
+              "Email already in use.": 400,
+              "Invalid email.": 400
+            };
+            
+            const statusCode = errorMessages[error.message] || 500;
+            res.status(statusCode).json({
+              message: error.message,
+              data: null,
+              status_code: statusCode
+            });
+            return;
+          }
+          throw error;
+        }
+      } else {
+        // Admin geral e geral local usam caso de uso dedicado
+        try {
+          const useCase = container.get<UpdateProfessionalByGeneralAdminUseCase>(TYPES.UpdateProfessionalByGeneralAdminUseCase);
+          const result = await useCase.execute(userProfile, adminId, id, req.body);
+          
+          res.status(200).json({
+            message: "Professional updated successfully",
+            data: result,
+            status_code: 200
+          });
+        } catch (error) {
+          if (error instanceof Error) {
+            const errorMessages: { [key: string]: number } = {
+              "Professional not found": 404,
+              "Admin not found": 404,
+              "General administrators cannot update other general administrators": 403,
+              "Cannot update a professional to general administrator profile": 403,
+              "General local administrators cannot update general administrators": 403,
+              "General local administrators cannot update other general local administrators": 403,
+              "General local administrators cannot update to general administrator profiles": 403,
+              "You can only update professionals from your city": 403,
+              "You can only update professionals to your city": 403,
+              "Admin not linked to any city": 400,
+              "Health unit not found": 404,
+              "City not found": 404,
+              "You do not have access to the health unit you are trying to link the professional to": 403,
+              "There is already a general local administrator for this city": 400,
+              "There is already a local administrator for this health unit": 400,
+              "CPF already in use": 400,
+              "Email already in use.": 400,
+              "Invalid email.": 400
+            };
+            
+            const statusCode = errorMessages[error.message] || 500;
+            res.status(statusCode).json({
+              message: error.message,
+              data: null,
+              status_code: statusCode
+            });
+            return;
+          }
+          throw error;
+        }
       }
+    } catch (error) {
       next(error);
     }
   }

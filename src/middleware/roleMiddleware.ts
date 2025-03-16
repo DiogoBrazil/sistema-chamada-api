@@ -24,6 +24,9 @@ export function roleMiddleware(allowedRoles: string[]) {
       if (!expandedRoles.includes('LOCAL_ADMINISTRATOR')) {
         expandedRoles.push('LOCAL_ADMINISTRATOR');
       }
+      if (!expandedRoles.includes('GENERAL_LOCAL_ADMINISTRATOR')) {
+        expandedRoles.push('GENERAL_LOCAL_ADMINISTRATOR');
+      }
     }
 
     // Verificar se o papel do usuário está na lista de papéis permitidos
@@ -76,26 +79,3 @@ export function localAdminMiddleware(healthUnitIdExtractor: (req: Request) => nu
     }
   };
 }
-
-
-// import { Request, Response, NextFunction } from 'express';
-
-// type UserProfile = 'ADMINISTRATOR' | 'DOCTOR' | 'RECEPTIONIST';
-
-// export const roleMiddleware = (allowedProfiles: UserProfile[]) => {
-//   return (req: Request, res: Response, next: NextFunction) => {
-//     const userProfile = req.user?.profile;
-
-//     if (!userProfile) {
-//       res.status(401).json({ error: 'User not found' });
-//       return
-//     }
-
-//     if (!allowedProfiles.includes(userProfile as UserProfile)) {
-//       res.status(403).json({ error: 'Unauthorized access to this profile' });
-//       return
-//     }
-
-//     next();
-//   };
-// };

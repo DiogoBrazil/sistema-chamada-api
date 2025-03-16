@@ -28,6 +28,8 @@ import { GetProfessionalsUseCase } from "./useCases/professional/GetProfessional
 import { GetProfessionalByIdUseCase } from "./useCases/professional/GetProfessionalByIdUseCase";
 import { DeleteProfessionalUseCase } from "./useCases/professional/DeleteProfessionalByIdUseCase";
 import { UpdateProfessionalUseCase } from "./useCases/professional/UpdateProfessionalByIdUseCase";
+import { UpdateProfessionalByLocalAdminUseCase } from "./useCases/professional/UpdateProfessionalByLocalAdminUseCase";
+import { UpdateProfessionalByGeneralAdminUseCase } from "./useCases/professional/UpdateProfessionalByGeneralAdminUseCase";
 import { InitializeAdminUseCase } from "./useCases/professional/InitializeAdminUseCase";
 import { GetProfessionalByCpfUseCase } from "./useCases/professional/GetProfessionalByCpfUseCase";
 import { GetProfessionalsByNameUseCase } from "./useCases/professional/GetProfessionalByNameUseCase";
@@ -130,6 +132,8 @@ container.bind(TYPES.LoginProfessionalUseCase).to(LoginProfessionalUseCase);
 container.bind(TYPES.SetOfficeUseCase).to(SetOfficeUseCase);
 container.bind(TYPES.DeleteProfessionalUseCase).to(DeleteProfessionalUseCase);
 container.bind(TYPES.UpdateProfessionalUseCase).to(UpdateProfessionalUseCase);
+container.bind(TYPES.UpdateProfessionalByLocalAdminUseCase).to(UpdateProfessionalByLocalAdminUseCase);
+container.bind(TYPES.UpdateProfessionalByGeneralAdminUseCase).to(UpdateProfessionalByGeneralAdminUseCase);
 container.bind(TYPES.InitializeAdminUseCase).to(InitializeAdminUseCase);
 container.bind(TYPES.GetProfessionalByCpfUseCase).to(GetProfessionalByCpfUseCase);
 container.bind(TYPES.GetProfessionalByNameUseCase).to(GetProfessionalsByNameUseCase);

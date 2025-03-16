@@ -120,6 +120,24 @@ export class HealthUnitRepository {
       }
     });
   }
+  
+  async getHealthUnitsByProfessionalId(professionalId: number): Promise<HealthUnit[]> {
+    return this.prisma.healthUnit.findMany({
+      where: {
+        professionals: {
+          some: {
+            id: professionalId
+          }
+        }
+      },
+      include: {
+        addresses: {
+          where: { isMain: true },
+          take: 1
+        }
+      }
+    });
+  }
 
   async getCityById(id: number): Promise<{ name: string, state: string } | null> {
     return this.prisma.city.findUnique({
@@ -138,6 +156,15 @@ export class HealthUnitRepository {
           where: { isMain: true },
           take: 1
         }
+      }
+    });
+  }
+
+  async hasAccessToHealthUnit(cityId: number, healthUnitId: number): Promise<HealthUnit[]> {
+    return this.prisma.healthUnit.findMany({
+      where: {
+        id: healthUnitId,
+        cityId
       }
     });
   }

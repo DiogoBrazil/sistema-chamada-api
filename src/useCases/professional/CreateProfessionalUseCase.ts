@@ -23,6 +23,7 @@ export class CreateProfessionalUseCase {
   async execute(data: ICreateProfessionalDTO): Promise<Omit<Professional, "password">> {
     const allowedProfiles = [
       "GENERAL_ADMINISTRATOR",
+      "GENERAL_LOCAL_ADMINISTRATOR",
       "LOCAL_ADMINISTRATOR", 
       "DOCTOR", 
       "RECEPTIONIST", 

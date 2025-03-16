@@ -11,7 +11,7 @@ export class ProfessionalAddressController {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'ADMINISTRATOR') {
+      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR'  && userProfile !== 'LOCAL_ADMINISTRATOR') {
         res.status(403).json({
           message: "Only administrators can manage professional addresses",
           data: null,
@@ -110,7 +110,7 @@ export class ProfessionalAddressController {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'ADMINISTRATOR') {
+      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR'  && userProfile !== 'LOCAL_ADMINISTRATOR') {
         res.status(403).json({
           message: "Only administrators can manage professional addresses",
           data: null,
@@ -160,7 +160,7 @@ export class ProfessionalAddressController {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'ADMINISTRATOR') {
+      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR'  && userProfile !== 'LOCAL_ADMINISTRATOR') {
         res.status(403).json({
           message: "Only administrators can manage professional addresses",
           data: null,

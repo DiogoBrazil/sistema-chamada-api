@@ -21,8 +21,21 @@ interface EnhancedAttendance {
   healthUnitId: number;
   
   // Campos adicionais que serão incluídos
-  patient?: any;
-  healthUnit?: any;
+  patient?: {
+    id: number;
+    fullName: string;
+    socialName: string;
+    cpf: string;
+  };
+  healthUnit?: {
+    id: number;
+    name: string;
+    city?: {
+      id: number;
+      name: string;
+      state: string;
+    };
+  };
   cityInfo?: {
     id: number;
     name: string;

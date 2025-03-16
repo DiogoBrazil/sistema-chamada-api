@@ -1,4 +1,3 @@
-// src/routes/reportRoutes.ts
 import { Router, Request, Response, NextFunction } from "express";
 import { ReportController } from "../controllers/ReportController";
 import { authorizeRoles, authorizeCity, authorizeHealthUnit } from "../middleware/authorizationMiddleware";

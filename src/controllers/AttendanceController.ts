@@ -344,7 +344,7 @@ export class AttendanceController {
       
       if (!professionalId) {
         res.status(400).json({
-          message: "Professional ID not found in token",
+          message: "Unauthorized user",
           data: null,
           status_code: 400
         });
@@ -353,7 +353,7 @@ export class AttendanceController {
       
       // Validar cidId - Apenas médicos podem incluir CID
       if (cidId) {
-        if (userProfile !== 'DOCTOR' && userProfile !== 'ADMINISTRATOR') {
+        if (userProfile !== 'DOCTOR' && userProfile !== 'GENERAL_ADMINISTRATOR') {
           res.status(403).json({
             message: "Only doctors can include CID in attendance records",
             data: null,

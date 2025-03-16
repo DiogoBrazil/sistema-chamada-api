@@ -1,12 +1,13 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { HealthUnitController } from "../controllers/HealthUnitController";
-import { roleMiddleware } from "../middleware/roleMiddleware";
+import { authorizeRoles, authorizeHealthUnit, canManageProfessional } from "../middleware/authorizationMiddleware";
+import { ProfileType } from "../constants/profilesTypes";
 
 const router = Router();
 const healthUnitController = new HealthUnitController();
 
 router.post("/", 
-  roleMiddleware(['GENERAL_ADMINISTRATOR']),
+  authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR]),
   (req: Request, res: Response, next: NextFunction) => 
     healthUnitController.create(req, res, next)
 );
@@ -22,25 +23,30 @@ router.get("/:id",
 );
 
 router.put("/:id", 
-  roleMiddleware(['GENERAL_ADMINISTRATOR']),
+  authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR]),
+  authorizeHealthUnit(req => Number(req.params.id)),
   (req: Request, res: Response, next: NextFunction) => 
     healthUnitController.update(req, res, next)
 );
 
 router.delete("/:id", 
-  roleMiddleware(['GENERAL_ADMINISTRATOR']),
+  authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR]),
+  authorizeHealthUnit(req => Number(req.params.id)),
   (req: Request, res: Response, next: NextFunction) => 
     healthUnitController.delete(req, res, next)
 );
 
 router.post("/:id/professionals", 
-  roleMiddleware(['ADMINISTRATOR']),
+  authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR]),
+  authorizeHealthUnit(req => Number(req.params.id)),
   (req: Request, res: Response, next: NextFunction) => 
     healthUnitController.addProfessional(req, res, next)
 );
 
 router.delete("/:id/professionals/:professionalId", 
-  roleMiddleware(['ADMINISTRATOR']),
+  authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR]),
+  authorizeHealthUnit(req => Number(req.params.id)),
+  canManageProfessional(req => Number(req.params.professionalId)),
   (req: Request, res: Response, next: NextFunction) => 
     healthUnitController.removeProfessional(req, res, next)
 );

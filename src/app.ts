@@ -13,6 +13,8 @@ import cityRoutes from "./routes/cityRoutes";
 import { apiLeyMiddleware } from "./middleware/apiLeyMiddleware";
 import { authMiddleware } from "./middleware/authMiddleware";
 import { roleMiddleware } from "./middleware/roleMiddleware";
+import { authorizeRoles } from "./middleware/authorizationMiddleware";
+import { ProfileType } from "./constants/profilesTypes";
 
 const app = express();
 
@@ -24,7 +26,7 @@ app.use("/api/auth", apiLeyMiddleware, authRoutes);
 
 // Middleware global para verificar api key e autenticação em todas as rotas
 app.use("/api", apiLeyMiddleware);
-app.use("/api", (req, res, next) => { authMiddleware(req, res, next); });
+app.use("/api", authMiddleware);
 
 // Rotas protegidas - precisa de autenticação
 app.use("/api/professionals", professionalRoutes);
@@ -35,9 +37,8 @@ app.use("/api/professionals", professionalAddressRoutes);
 app.use("/api/health-units", healthUnitRoutes);
 app.use("/api/cid", cidRoutes);
 app.use("/api/city", cityRoutes);
-
 // Rota que exige perfil específico (apenas médicos e admins)
-app.use("/api/reports", roleMiddleware(['ADMINISTRATOR', 'DOCTOR']), reportRoutes);
+app.use("/api/reports", authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.DOCTOR]), reportRoutes);
 
 // Middleware global de tratamento de erros
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

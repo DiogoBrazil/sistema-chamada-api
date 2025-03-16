@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { CityController } from "../controllers/CityController";
-import { authorizeRoles } from "../middleware/authorizationMiddleware";
+import { authorizeRoles, authorizeCity } from "../middleware/authorizationMiddleware";
 import { ProfileType } from "../constants/profilesTypes";
 
 const router = Router();
@@ -48,6 +48,7 @@ router.get("/search/:term",
 // Atualização - apenas administrador geral
 router.put("/:id", 
   authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR]),
+  authorizeCity(req => Number(req.params.id)),
   (req: Request, res: Response, next: NextFunction) => 
     cityController.update(req, res, next)
 );
@@ -55,6 +56,7 @@ router.put("/:id",
 // Exclusão - apenas administrador geral
 router.delete("/:id", 
   authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR]),
+  authorizeCity(req => Number(req.params.id)),
   (req: Request, res: Response, next: NextFunction) => 
     cityController.delete(req, res, next)
 );
