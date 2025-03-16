@@ -5,13 +5,14 @@ import { CreateProfessionalAddressUseCase } from "../useCases/address/profession
 import { GetProfessionalAddressesUseCase } from "../useCases/address/professional/GetProfessionalAddressesUseCase";
 import { UpdateProfessionalAddressUseCase } from "../useCases/address/professional/UpdateProfessionalAddressUseCase";
 import { DeleteProfessionalAddressUseCase } from "../useCases/address/professional/DeleteProfessionalAddressUseCase";
+import { ProfileType } from "../constants/profilesTypes";
 
 export class ProfessionalAddressController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR'  && userProfile !== 'LOCAL_ADMINISTRATOR') {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR && userProfile !== ProfileType.LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only administrators can manage professional addresses",
           data: null,
@@ -110,7 +111,7 @@ export class ProfessionalAddressController {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR'  && userProfile !== 'LOCAL_ADMINISTRATOR') {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR && userProfile !== ProfileType.LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only administrators can manage professional addresses",
           data: null,
@@ -160,7 +161,7 @@ export class ProfessionalAddressController {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR'  && userProfile !== 'LOCAL_ADMINISTRATOR') {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR && userProfile !== ProfileType.LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only administrators can manage professional addresses",
           data: null,

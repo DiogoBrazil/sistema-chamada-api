@@ -48,6 +48,17 @@ export class CityController {
 
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      // Verificar se o usuário é administrador geral
+      const userProfile = req.user?.profile;
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR) {
+        res.status(403).json({
+          message: "Only general administrators can get cities",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
       const page = parseInt(req.query.page as string) || 1;
       const useCase = container.get<GetCitiesUseCase>(TYPES.GetCitiesUseCase);
       const result = await useCase.execute(page);
@@ -69,6 +80,17 @@ export class CityController {
 
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      // Verificar se o usuário é administrador geral
+      const userProfile = req.user?.profile;
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR) {
+        res.status(403).json({
+          message: "Only general administrators can get city by ID",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
       const id = Number(req.params.id);
       const useCase = container.get<GetCityByIdUseCase>(TYPES.GetCityByIdUseCase);
       const result = await useCase.execute(id);
@@ -194,6 +216,17 @@ export class CityController {
 
   async search(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      // Verificar se o usuário é administrador geral
+      const userProfile = req.user?.profile;
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR) {
+        res.status(403).json({
+          message: "Only general administrators can search cities",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
       const term = req.params.term;
       
       if (!term || term.trim().length < 2) {

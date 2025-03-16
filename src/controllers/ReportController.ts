@@ -39,7 +39,7 @@ export class ReportController {
       const result = await useCase.execute(data);
       
       res.status(200).json({
-        message: "Relatório gerado com sucesso",
+        message: "Report generated successfully",
         data: result,
         status_code: 200
       });

@@ -30,6 +30,7 @@ export class AuthController {
   
   async setOffice(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+
       const { professionalId, office } = req.body;
       const useCase = container.get<SetOfficeUseCase>(TYPES.SetOfficeUseCase);
       const result = await useCase.execute(professionalId, office);
@@ -54,9 +55,10 @@ export class AuthController {
   // Novo método para definir o modo de atendimento (triagem ou consulta)
   async setAttendanceMode(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { professionalId, attendanceMode } = req.body;
+
+      const data = req.body;
       
-      if (!professionalId || !attendanceMode) {
+      if (!data.professionalId || !data.attendanceMode) {
         res.status(400).json({
           message: "professionalId and attendanceMode are required",
           data: null,
@@ -66,7 +68,7 @@ export class AuthController {
       }
 
       const useCase = container.get<SetAttendanceModeUseCase>(TYPES.SetAttendanceModeUseCase);
-      const result = await useCase.execute({ professionalId, attendanceMode });
+      const result = await useCase.execute(data);
       
       res.status(200).json({
         message: "Attendance mode set successfully",

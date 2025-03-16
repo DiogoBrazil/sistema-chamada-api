@@ -6,13 +6,14 @@ import { GetCidsUseCase } from "../useCases/cid/GetCidsUseCase";
 import { SearchCidUseCase } from "../useCases/cid/SearchCidUseCase";
 import { UpdateCidUseCase } from "../useCases/cid/UpdateCidUseCase";
 import { DeleteCidUseCase } from "../useCases/cid/DeleteCidUseCase";
+import { ProfileType } from "../constants/profilesTypes";
 
 export class CidController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (!['GENERAL_ADMINISTRATOR',].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only general administrators can create CID records",
           data: null,
@@ -47,7 +48,7 @@ export class CidController {
     try {
        // Verificar se o usuário é admin ou médico
        const userProfile = req.user?.profile;
-       if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
+       if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.DOCTOR].includes(userProfile as ProfileType)) {
          res.status(403).json({
            message: "Only administrators or doctors can get CIDs",
            data: null,
@@ -79,7 +80,7 @@ export class CidController {
     try {
        // Verificar se o usuário é admin ou médico
        const userProfile = req.user?.profile;
-       if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
+       if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.DOCTOR].includes(userProfile as ProfileType)) {
          res.status(403).json({
            message: "Only administrators or doctors can search CIDs",
            data: null,
@@ -116,7 +117,7 @@ export class CidController {
     try {
       // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (!['GENERAL_ADMINISTRATOR',].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only general administrators can update CID records",
           data: null,
@@ -166,7 +167,7 @@ export class CidController {
     try {
       // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (!['GENERAL_ADMINISTRATOR',].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only general administrators can delete CID records",
           data: null,

@@ -11,6 +11,7 @@ import { GetNursingConsultationAttendancesUseCase } from "../useCases/attendance
 import { ForwardAttendanceUseCase } from "../useCases/attendance/ForwardAttendanceUseCase";
 import { GetDentalConsultationAttendancesUseCase } from "../useCases/attendance/GetDentalConsultationAttendancesUseCase";
 import { GetVaccineAttendancesUseCase } from "../useCases/attendance/GetVaccineAttendancesUseCase";
+import { ProfileType } from "../constants/profilesTypes";
 
 export class AttendanceController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -32,7 +33,7 @@ export class AttendanceController {
     try {
       // Verifica se o usuário tem um perfil permitido
       const userProfile = req.user?.profile;
-      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'NURSE'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.DOCTOR, ProfileType.NURSE].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators, doctors or nurses can get all attendances",
           data: null,
@@ -62,7 +63,7 @@ export class AttendanceController {
       const professionalId = req.user?.id;
       const userProfile = req.user?.profile;
 
-      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR','NURSING_TECHNICIAN', 'NURSE'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.DOCTOR, ProfileType.NURSING_TECHNICIAN, ProfileType.NURSE].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators, doctors, nursing technicians or nurses can get triage attendances",
           data: null,
@@ -100,7 +101,7 @@ export class AttendanceController {
       const professionalId = req.user?.id;
       const userProfile = req.user?.profile;
 
-      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.DOCTOR].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators or doctors can get medical attendances",
           data: null,
@@ -176,7 +177,7 @@ export class AttendanceController {
       const professionalId = req.user?.id;
       const userProfile = req.user?.profile;
 
-      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'ODONTOLOGIST'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.ODONTOLOGIST].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators or odondologist can get dental attendances",
           data: null,
@@ -215,7 +216,7 @@ export class AttendanceController {
       const professionalId = req.user?.id;
       const userProfile = req.user?.profile;
 
-      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR', 'DOCTOR', 'NURSE', 'NURSING_TECHNICIAN'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.DOCTOR, ProfileType.NURSE, ProfileType.NURSING_TECHNICIAN].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators, doctor, nurse or nursing technician can get vaccine attendances",
           data: null,
@@ -249,7 +250,7 @@ export class AttendanceController {
     try {
       // Verifica se o usuário tem um perfil permitido (ACS não pode chamar pacientes)
       const userProfile = req.user?.profile;
-      if (!['DOCTOR', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST'].includes(userProfile || '')) {
+      if (![ProfileType.DOCTOR, ProfileType.NURSE, ProfileType.NURSING_TECHNICIAN, ProfileType.ODONTOLOGIST].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only general administrator, doctors, nurses, nursing technicians or odontologists can call patients",
           data: null,
@@ -319,7 +320,7 @@ export class AttendanceController {
     try {
       // Verifica se o usuário tem um perfil permitido (ACS não pode finalizar atendimentos)
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'DOCTOR', 'NURSE', 'NURSING_TECHNICIAN', 'ODONTOLOGIST'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.DOCTOR, ProfileType.NURSE, ProfileType.NURSING_TECHNICIAN, ProfileType.ODONTOLOGIST].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators, doctors, nurses, nursing technicians or odontologists can finish attendances",
           data: null,
@@ -329,7 +330,7 @@ export class AttendanceController {
       }
       
       // Verificação específica para bloquear ACS
-      if (userProfile === 'ACS') {
+      if (userProfile === ProfileType.ACS) {
         res.status(403).json({
           message: "Community health agents cannot finish attendances",
           data: null,
@@ -353,7 +354,7 @@ export class AttendanceController {
       
       // Validar cidId - Apenas médicos podem incluir CID
       if (cidId) {
-        if (userProfile !== 'DOCTOR' && userProfile !== 'GENERAL_ADMINISTRATOR') {
+        if (userProfile !== ProfileType.DOCTOR && userProfile !== ProfileType.GENERAL_ADMINISTRATOR) {
           res.status(403).json({
             message: "Only doctors can include CID in attendance records",
             data: null,
@@ -411,7 +412,7 @@ export class AttendanceController {
     try {
       // Verifica se o usuário tem um perfil permitido para encaminhar
       const userProfile = req.user?.profile;
-      if (!['ADMINISTRATOR', 'NURSING_TECHNICIAN', 'NURSE'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR, ProfileType.NURSING_TECHNICIAN, ProfileType.NURSE].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators, nursing technicians or nurses can forward attendances",
           data: null,

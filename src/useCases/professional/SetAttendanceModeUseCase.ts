@@ -3,6 +3,7 @@ import { ProfessionalRepository } from "../../repositories/ProfessionalRepositor
 import { TYPES } from "../../types";
 import { Professional } from "@prisma/client";
 import { ISetAttendanceModeDTO } from "../../interfaces/professional/ISetAttendanceModeDTO";
+import { ProfileType } from "../../constants/profilesTypes";
 
 @injectable()
 export class SetAttendanceModeUseCase {
@@ -15,6 +16,7 @@ export class SetAttendanceModeUseCase {
   }
   
   async execute(data: ISetAttendanceModeDTO): Promise<Omit<Professional, "password">> {
+
     const { professionalId, attendanceMode } = data;
 
     const professionalExists = await this.professionalRepository.getProfessionalById(professionalId);
@@ -22,11 +24,15 @@ export class SetAttendanceModeUseCase {
       throw new Error("Professional not found.");
     }
 
-    if (professionalExists.profile == "NURSE") {
+    if (professionalExists.profile !== ProfileType.NURSING_TECHNICIAN && professionalExists.profile !== ProfileType.NURSE) {
+      throw new Error("Only nurse and nursing technician can set an attendace mode.");
+    }
+
+    if (professionalExists.profile == ProfileType.NURSE) {
       if (!["TRIAGE", "CONSULTATION", "VACCINE"].includes(attendanceMode)) {
         throw new Error("Invalid attendance mode. Only 'TRIAGE' or 'CONSULTATION' or 'VACCINE' are allowed.");
       }
-    } else if (professionalExists.profile == "NURSING_TECHNICIAN") {
+    } else {
       if (!["TRIAGE", "VACCINE"].includes(attendanceMode)) {
         throw new Error("Invalid attendance mode. Only 'TRIAGE' or 'CONSULTATION' or 'VACCINE' are allowed.");
       }

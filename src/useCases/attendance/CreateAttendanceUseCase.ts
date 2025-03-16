@@ -31,7 +31,7 @@ export class CreateAttendanceUseCase {
     const { patientId, attendanceStage, professionalId, healthUnitId } = data;
     
     // Valida o estágio de atendimento
-    const allowedStages = ["TRIAGE", "DENTAL_CONSULTATION", "VACCINE"];
+    const allowedStages = [String(AttendanceStage.TRIAGE), String(AttendanceStage.DENTAL_CONSULTATION), String(AttendanceStage.VACCINE)];
     if (!allowedStages.includes(attendanceStage)) {
       throw new Error("Invalid attendance stage");
     }

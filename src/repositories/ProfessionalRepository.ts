@@ -249,7 +249,8 @@ export class ProfessionalRepository {
         addresses: {
           where: { isMain: true },
           take: 1
-        }
+        },
+        healthUnit: true
       } 
     });
   }

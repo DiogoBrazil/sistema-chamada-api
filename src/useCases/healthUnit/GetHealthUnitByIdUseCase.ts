@@ -18,7 +18,7 @@ export class GetHealthUnitByIdUseCase {
     this.professionalRepository = professionalRepository;
   }
   
-  async execute(id: number, adminId: number, userProfile: string): Promise<HealthUnit | null> {
+  async execute(healthUnitId: number, adminId: number, userProfile: string): Promise<HealthUnit | null> {
 
     if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR) {
       throw new Error("Only administrators can access this health unit");
@@ -27,10 +27,10 @@ export class GetHealthUnitByIdUseCase {
     if (userProfile === ProfileType.GENERAL_LOCAL_ADMINISTRATOR) {
       const professionalGeneralLocal = await this.professionalRepository.getProfessionalById(adminId);
       if (!professionalGeneralLocal) {
-        throw new Error("Admin not found");
+        throw new Error("General local administrator not found");
       }
       // Verificar se a unidade de saúde pertence ao admin
-      const healthUnit = await this.healthUnitRepository.getHealthUnitById(id);
+      const healthUnit = await this.healthUnitRepository.getHealthUnitById(healthUnitId);
       if (!healthUnit) {
         throw new Error("Health unit not found");
       }
@@ -40,6 +40,6 @@ export class GetHealthUnitByIdUseCase {
       
     }
 
-    return this.healthUnitRepository.getHealthUnitById(id);
+    return this.healthUnitRepository.getHealthUnitById(healthUnitId);
   }
 }

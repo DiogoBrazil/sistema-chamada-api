@@ -11,6 +11,7 @@ import { CreateProfessionalByLocalAdminUseCase } from "../useCases/professional/
 import { CreateProfessionalByGeneralAdminUseCase } from "../useCases/professional/CreateProfessionalByGeneralAdminUseCase";
 import { UpdateProfessionalByLocalAdminUseCase } from "../useCases/professional/UpdateProfessionalByLocalAdminUseCase";
 import { UpdateProfessionalByGeneralAdminUseCase } from "../useCases/professional/UpdateProfessionalByGeneralAdminUseCase";
+import { ProfileType } from "../constants/profilesTypes";
 
 
 export class ProfessionalController {
@@ -21,7 +22,7 @@ export class ProfessionalController {
       const userProfile = req.user?.profile;
       const userId = req.user?.id;
       
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR && userProfile !== ProfileType.LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only administrators can create professionals",
           data: null,
@@ -31,7 +32,7 @@ export class ProfessionalController {
       }
 
       // Rotas diferentes dependendo do tipo de administrador
-      if (userProfile === 'LOCAL_ADMINISTRATOR' && userId) {
+      if (userProfile === ProfileType.LOCAL_ADMINISTRATOR && userId) {
         try {
           const useCase = container.get<CreateProfessionalByLocalAdminUseCase>(TYPES.CreateProfessionalByLocalAdminUseCase);
           const result = await useCase.execute(userId, req.body);
@@ -281,7 +282,7 @@ export class ProfessionalController {
       const userProfile = req.user?.profile;
       const adminId = req.user?.id;
       
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR && userProfile !== ProfileType.LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only administrators can update professionals",
           data: null,
@@ -310,7 +311,7 @@ export class ProfessionalController {
       }
 
       // Rotas diferentes dependendo do tipo de administrador
-      if (userProfile === 'LOCAL_ADMINISTRATOR') {
+      if (userProfile === ProfileType.LOCAL_ADMINISTRATOR) {
         try {
           const useCase = container.get<UpdateProfessionalByLocalAdminUseCase>(TYPES.UpdateProfessionalByLocalAdminUseCase);
           const result = await useCase.execute(adminId, id, req.body);
@@ -399,7 +400,7 @@ export class ProfessionalController {
     try {
       // Verifica se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR' && userProfile !== 'LOCAL_ADMINISTRATOR') {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR && userProfile !== ProfileType.LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only administrators can delete professionals",
           data: null,

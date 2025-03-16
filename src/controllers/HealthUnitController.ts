@@ -9,13 +9,14 @@ import { DeleteHealthUnitUseCase } from "../useCases/healthUnit/DeleteHealthUnit
 import { AddProfessionalToHealthUnitUseCase } from "../useCases/healthUnit/AddProfessionalToHealthUnitUseCase";
 import { RemoveProfessionalFromHealthUnitUseCase } from "../useCases/healthUnit/RemoveProfessionalFromHealthUnitUseCase";
 import { VerifyLocalAdminAccessUseCase } from "../useCases/professional/VerifyLocalAdminAccessUseCase";
+import { ProfileType } from "../constants/profilesTypes";
 
 export class HealthUnitController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR') {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only general administrators can create health units",
           data: null,
@@ -102,9 +103,9 @@ export class HealthUnitController {
         return;
       }
 
-      const id = Number(req.params.id);
+      const healthUnitId = Number(req.params.id);
       const useCase = container.get<GetHealthUnitByIdUseCase>(TYPES.GetHealthUnitByIdUseCase);
-      const result = await useCase.execute(id, adminId, userProfile);
+      const result = await useCase.execute(healthUnitId, adminId, userProfile);
       
       if (!result) {
         res.status(404).json({
@@ -127,11 +128,21 @@ export class HealthUnitController {
 
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Verificar permissões de administrador
+      // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR'].includes(userProfile || '')) {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only general administrators can update health units",
+          data: null,
+          status_code: 403
+        });
+        return;
+      }
+
+      const requestingProfessionalId = req.user?.id;
+      if (!requestingProfessionalId) {
+        res.status(403).json({
+          message: "Only authenticated users can update health units",
           data: null,
           status_code: 403
         });
@@ -149,7 +160,7 @@ export class HealthUnitController {
       }
 
       // Se for admin local, verificar se tem acesso a esta unidade
-      if (userProfile === 'GENERAL_LOCAL_ADMINISTRATOR' && req.user?.id) {
+      if (userProfile === ProfileType.GENERAL_LOCAL_ADMINISTRATOR && req.user?.id) {
         const verifyUseCase = container.get<VerifyLocalAdminAccessUseCase>(TYPES.VerifyLocalAdminAccessUseCase);
         const hasAccess = await verifyUseCase.execute(req.user.id, id);
         
@@ -164,7 +175,7 @@ export class HealthUnitController {
       }
 
       const useCase = container.get<UpdateHealthUnitUseCase>(TYPES.UpdateHealthUnitUseCase);
-      const result = await useCase.execute(id, req.body);
+      const result = await useCase.execute(requestingProfessionalId, userProfile, id, req.body);
       
       res.status(200).json({
         message: "Health unit updated successfully",
@@ -175,7 +186,11 @@ export class HealthUnitController {
       if (error instanceof Error) {
         const errorMessages: { [key: string]: number } = {
           "Health unit not found": 404,
-          "CNPJ already in use": 400
+          "CNPJ already in use": 400,
+          "City not found": 404,
+          "Street, neighborhood and zipCode are required for address": 400,
+          "Professional does not have permission to update a health unit in this city": 403,
+          "Requesting professional not found": 404
         };
 
         const statusCode = errorMessages[error.message] || 500;
@@ -194,7 +209,7 @@ export class HealthUnitController {
     try {
       // Verificar se o usuário é admin
       const userProfile = req.user?.profile;
-      if (userProfile !== 'GENERAL_ADMINISTRATOR' && userProfile !== 'GENERAL_LOCAL_ADMINISTRATOR') {
+      if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only general administrators can delete health units",
           data: null,
@@ -215,7 +230,7 @@ export class HealthUnitController {
       }
 
       // Se for admin local, verificar se tem acesso a esta unidade
-      if (userProfile === 'GENERAL_LOCAL_ADMINISTRATOR' && req.user?.id) {
+      if (userProfile === ProfileType.GENERAL_LOCAL_ADMINISTRATOR && req.user?.id) {
         const verifyUseCase = container.get<VerifyLocalAdminAccessUseCase>(TYPES.VerifyLocalAdminAccessUseCase);
         const hasAccess = await verifyUseCase.execute(req.user.id, id);
         
@@ -260,7 +275,7 @@ export class HealthUnitController {
     try {
       // Verificar permissões de administrador
       const userProfile = req.user?.profile;
-      if (!['GENERAL_ADMINISTRATOR', 'LOCAL_ADMINISTRATOR'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.LOCAL_ADMINISTRATOR].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators can add professionals to health units",
           data: null,
@@ -282,7 +297,7 @@ export class HealthUnitController {
       }
 
       // Se for admin local, verificar se tem acesso a esta unidade
-      if (userProfile === 'GENERAL_LOCAL_ADMINISTRATOR' && req.user?.id) {
+      if (userProfile === ProfileType.GENERAL_LOCAL_ADMINISTRATOR && req.user?.id) {
         const verifyUseCase = container.get<VerifyLocalAdminAccessUseCase>(TYPES.VerifyLocalAdminAccessUseCase);
         const hasAccess = await verifyUseCase.execute(req.user.id, healthUnitId);
         
@@ -328,7 +343,7 @@ export class HealthUnitController {
     try {
       // Verificar permissões de administrador
       const userProfile = req.user?.profile;
-      if (!['GENERAL_ADMINISTRATOR', 'GENERAL_LOCAL_ADMINISTRATOR'].includes(userProfile || '')) {
+      if (![ProfileType.GENERAL_ADMINISTRATOR, ProfileType.GENERAL_LOCAL_ADMINISTRATOR].includes(userProfile as ProfileType)) {
         res.status(403).json({
           message: "Only administrators can remove professionals from health units",
           data: null,
@@ -350,7 +365,7 @@ export class HealthUnitController {
       }
 
       // Se for admin local, verificar se tem acesso a esta unidade
-      if (userProfile === 'GENERAL_LOCAL_ADMINISTRATOR' && req.user?.id) {
+      if (userProfile === ProfileType.GENERAL_LOCAL_ADMINISTRATOR && req.user?.id) {
         const verifyUseCase = container.get<VerifyLocalAdminAccessUseCase>(TYPES.VerifyLocalAdminAccessUseCase);
         const hasAccess = await verifyUseCase.execute(req.user.id, healthUnitId);
         

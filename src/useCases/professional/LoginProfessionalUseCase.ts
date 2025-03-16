@@ -37,7 +37,6 @@ export class LoginProfessionalUseCase {
     
     const { password, ...userData } = professional;
     
-    
     const secret = process.env.JWT_SECRET || "defaultsecret";
     const expiresIn = "24h";
     
