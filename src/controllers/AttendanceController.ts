@@ -59,6 +59,8 @@ export class AttendanceController {
 
       const healthUnitId = Number(req.params.healthUnitId);
 
+      console.log(healthUnitId);
+
       // Verifica se o usuário tem um perfil permitido
       const professionalId = req.user?.id;
       const userProfile = req.user?.profile;

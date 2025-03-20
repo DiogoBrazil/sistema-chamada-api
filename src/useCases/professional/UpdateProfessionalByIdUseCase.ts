@@ -3,22 +3,25 @@ import { ProfessionalRepository } from "../../repositories/ProfessionalRepositor
 import { ProfessionalAddressRepository } from "../../repositories/ProfessionalAddressRepository";
 import { TYPES } from "../../types";
 import { Professional } from "@prisma/client";
-import argon2 from "argon2";
 import { IUpdateProfessionalDTO } from "../../interfaces/professional/IUpdateProfessionalDTO";
 import { emailValidator } from "../../utils/emailValidator";
 import { ProfileType } from "../../constants/profilesTypes";
+import { PasswordEncryptor } from "../../adapters/PasswordEncryptor";
 
 @injectable()
 export class UpdateProfessionalUseCase {
   private professionalRepository: ProfessionalRepository;
   private professionalAddressRepository: ProfessionalAddressRepository;
+  private passwordEncryptor: PasswordEncryptor;
   
   constructor(
     @inject(TYPES.ProfessionalRepository) professionalRepository: ProfessionalRepository,
-    @inject(TYPES.ProfessionalAddressRepository) professionalAddressRepository: ProfessionalAddressRepository
+    @inject(TYPES.ProfessionalAddressRepository) professionalAddressRepository: ProfessionalAddressRepository,
+    @inject(TYPES.PasswordEncryptor) passwordEncryptor: PasswordEncryptor
   ) {
     this.professionalRepository = professionalRepository;
     this.professionalAddressRepository = professionalAddressRepository;
+    this.passwordEncryptor = passwordEncryptor;
   }
   
   async execute(id: number, data: IUpdateProfessionalDTO, adminId: number, userProfile: string): Promise<Omit<Professional, 'password'>> {
@@ -130,7 +133,7 @@ export class UpdateProfessionalUseCase {
 
     let updateProfessionalData = { ...professionalData };
     if (professionalData.password) {
-      updateProfessionalData.password = await argon2.hash(professionalData.password);
+      updateProfessionalData.password = await this.passwordEncryptor.encrypt(professionalData.password);
     }
     const professional = await this.professionalRepository.updateProfessional(id, updateProfessionalData);
 

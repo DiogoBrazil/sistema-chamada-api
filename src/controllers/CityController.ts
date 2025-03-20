@@ -1,4 +1,3 @@
-// src/controllers/CityController.ts
 import { Request, Response, NextFunction } from "express";
 import { container } from "../container";
 import { TYPES } from "../types";

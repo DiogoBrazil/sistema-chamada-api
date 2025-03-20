@@ -9,6 +9,10 @@ export const TYPES = {
   HealthUnitAddressRepository: Symbol.for("HealthUnitAddressRepository"),
   CidRepository: Symbol.for("CidRepository"),
   CityRepository: Symbol.for("CityRepository"),
+
+  // Adapters
+  PasswordEncryptor: Symbol.for("PasswordEncryptor"),
+  TokenGenerator: Symbol.for("TokenGenerator"),
   
   // Use cases (professional)
   CreateProfessionalUseCase: Symbol.for("CreateProfessionalUseCase"),

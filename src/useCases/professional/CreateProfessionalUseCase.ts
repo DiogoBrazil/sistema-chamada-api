@@ -2,22 +2,25 @@ import { injectable, inject } from "inversify";
 import { ProfessionalRepository } from "../../repositories/ProfessionalRepository";
 import { ProfessionalAddressRepository } from "../../repositories/ProfessionalAddressRepository";
 import { TYPES } from "../../types";
-import argon2 from "argon2";
 import { Professional } from "@prisma/client";
 import { ICreateProfessionalDTO } from "../../interfaces/professional/ICreateProfessionalDTO";
 import { emailValidator } from "../../utils/emailValidator";
+import { PasswordEncryptor } from "../../adapters/PasswordEncryptor";
 
 @injectable()
 export class CreateProfessionalUseCase {
   private professionalRepository: ProfessionalRepository;
   private professionalAddressRepository: ProfessionalAddressRepository;
+  private passwordEncryptor: PasswordEncryptor;
   
   constructor(
     @inject(TYPES.ProfessionalRepository) professionalRepository: ProfessionalRepository,
-    @inject(TYPES.ProfessionalAddressRepository) professionalAddressRepository: ProfessionalAddressRepository
+    @inject(TYPES.ProfessionalAddressRepository) professionalAddressRepository: ProfessionalAddressRepository,
+    @inject(TYPES.PasswordEncryptor) passwordEncryptor: PasswordEncryptor
   ) {
     this.professionalRepository = professionalRepository;
     this.professionalAddressRepository = professionalAddressRepository;
+    this.passwordEncryptor = passwordEncryptor;
   }
   
   async execute(data: ICreateProfessionalDTO): Promise<Omit<Professional, "password">> {
@@ -55,7 +58,7 @@ export class CreateProfessionalUseCase {
     // Separa os dados do endereço do profissional
     const { address, ...professionalData } = data;
     
-    const hashedPassword = await argon2.hash(data.password);
+    const hashedPassword = await this.passwordEncryptor.encrypt(data.password);
 
     const professionalDataWithHashedPassword = {
       ...professionalData,

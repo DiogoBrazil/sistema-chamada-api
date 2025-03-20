@@ -1,4 +1,3 @@
-// src/repositories/AttendanceRepository.ts
 import { injectable } from "inversify";
 import { PrismaClient, Attendance, AttendanceStatus, AttendanceStage, AttendanceHistory } from "@prisma/client";
 

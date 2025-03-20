@@ -1,9 +1,9 @@
 import { injectable, inject } from "inversify";
 import { ProfessionalRepository } from "../../repositories/ProfessionalRepository";
 import { TYPES } from "../../types";
-import argon2 from "argon2";
-import jwt from "jsonwebtoken";
 import { Professional } from "@prisma/client";
+import { PasswordEncryptor } from "../../adapters/PasswordEncryptor";
+import { TokenGenerator } from "../../adapters/TokenGenerator";
 
 interface ILoginDTO {
   cpf: string;
@@ -13,11 +13,17 @@ interface ILoginDTO {
 @injectable()
 export class LoginProfessionalUseCase {
   private professionalRepository: ProfessionalRepository;
+  private passwordEncryptor: PasswordEncryptor;
+  private tokenGenerator: TokenGenerator;
   
   constructor(
-    @inject(TYPES.ProfessionalRepository) professionalRepository: ProfessionalRepository
+    @inject(TYPES.ProfessionalRepository) professionalRepository: ProfessionalRepository,
+    @inject(TYPES.PasswordEncryptor) passwordEncryptor: PasswordEncryptor,
+    @inject(TYPES.TokenGenerator) tokenGenerator: TokenGenerator
   ) {
     this.professionalRepository = professionalRepository;
+    this.passwordEncryptor = passwordEncryptor;
+    this.tokenGenerator = tokenGenerator;
   }
   
   async execute(data: ILoginDTO): Promise<{ token: string; user: Omit<Professional, "password"> }> {
@@ -30,27 +36,20 @@ export class LoginProfessionalUseCase {
       throw new Error("Professional not found.");
     }
     
-    const valid = await argon2.verify(professional.password, data.password);
+    const valid = await this.passwordEncryptor.verify(professional.password, data.password);
     if (!valid) {
       throw new Error("Invalid credentials.");
     }
     
     const { password, ...userData } = professional;
     
-    const secret = process.env.JWT_SECRET || "defaultsecret";
-    const expiresIn = "24h";
-    
-    const token = jwt.sign(
-      {
-        id: professional.id,
-        fullName: professional.fullName,
-        cpf: professional.cpf,
-        profile: professional.profile,
-        attendanceMode: professional.attendanceMode,
-      },
-      secret,
-      { expiresIn }
-    );
+    const token = this.tokenGenerator.generate({
+      id: professional.id,
+      fullName: professional.fullName,
+      cpf: professional.cpf,
+      profile: professional.profile,
+      attendanceMode: professional.attendanceMode,
+    });
     
     return { token, user: userData };
   }

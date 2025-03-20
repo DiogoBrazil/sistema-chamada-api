@@ -116,6 +116,12 @@ export class GetAttendancesUseCase {
     }
     
     // Buscar atendimentos com os filtros determinados
-    return this.attendanceRepository.getAttendances(filters);
+    const attendances = await this.attendanceRepository.getAttendances(filters);
+
+    if (attendances.length === 0) {
+      throw new Error("No attendances found");
+    } else {
+      return attendances;
+    }
   }
 }

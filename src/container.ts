@@ -2,6 +2,10 @@ import { Container } from "inversify";
 import "reflect-metadata";
 import { TYPES } from "./types";
 
+// Adapters
+import { PasswordEncryptor } from "./adapters/PasswordEncryptor";
+import { TokenGenerator } from "./adapters/TokenGenerator";
+
 // Repositories
 import { ProfessionalRepository } from "./repositories/ProfessionalRepository";
 import { PatientRepository } from "./repositories/PatientRepository";
@@ -110,6 +114,10 @@ container.bind(TYPES.HealthUnitRepository).to(HealthUnitRepository).inSingletonS
 container.bind(TYPES.HealthUnitAddressRepository).to(HealthUnitAddressRepository).inSingletonScope();
 container.bind(TYPES.CidRepository).to(CidRepository).inSingletonScope();
 container.bind(TYPES.CityRepository).to(CityRepository).inSingletonScope();
+
+// Adapter bindings
+container.bind(TYPES.PasswordEncryptor).to(PasswordEncryptor).inSingletonScope();
+container.bind(TYPES.TokenGenerator).to(TokenGenerator).inSingletonScope();
 
 // Use case bindings (city) - Novos
 container.bind(TYPES.CreateCityUseCase).to(CreateCityUseCase);
