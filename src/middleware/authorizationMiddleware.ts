@@ -9,7 +9,7 @@ export function authorizeRoles(allowedRoles: ProfileType[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({
-        message: 'Usuário não autenticado',
+        message: 'Unauthenticated user',
         data: null,
         status_code: 401
       });
@@ -19,7 +19,7 @@ export function authorizeRoles(allowedRoles: ProfileType[]) {
     
     if (!allowedRoles.includes(userProfile)) {
       return res.status(403).json({
-        message: 'Permissões insuficientes para esta operação',
+        message: 'Insufficient permissions for this operation',
         data: null,
         status_code: 403
       });
@@ -34,7 +34,7 @@ export function authorizeHealthUnit(healthUnitIdExtractor: (req: Request) => num
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({
-        message: 'Usuário não autenticado',
+        message: 'Unauthenticated user',
         data: null,
         status_code: 401
       });
