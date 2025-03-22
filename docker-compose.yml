@@ -8,7 +8,7 @@ services:
     env_file:
       - .env.prod
     environment:
-      DATABASE_URL: "postgresql://ribeiro:ribeiro123%40medcall@db:5432/medcall?schema=public"
+      DATABASE_URL: "postgresql://ribeiro:password@db:5432/db_name?schema=public"
     depends_on:
       db:
         condition: service_healthy
@@ -28,9 +28,9 @@ services:
     env_file:
       - .env.prod
     environment:
-      POSTGRES_USER: ribeiro
-      POSTGRES_PASSWORD: ribeiro123@medcall
-      POSTGRES_DB: medcall
+      POSTGRES_USER: your_user_db
+      POSTGRES_PASSWORD: your_password_db
+      POSTGRES_DB: your_db_name
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
