@@ -15,13 +15,14 @@ import { ProfileType } from "../constants/profilesTypes";
 
 
 export class ProfessionalController {
-  
+
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Verifica o tipo de admin
       const userProfile = req.user?.profile;
       const userId = req.user?.id;
-      
+
+      //TODO: Duplicado. Lógica igual no arquivo authorizationMiddleware.ts função authorizeProfessionalManagement
       if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR && userProfile !== ProfileType.LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only administrators can create professionals",
@@ -36,7 +37,7 @@ export class ProfessionalController {
         try {
           const useCase = container.get<CreateProfessionalByLocalAdminUseCase>(TYPES.CreateProfessionalByLocalAdminUseCase);
           const result = await useCase.execute(userId, req.body);
-          
+
           res.status(201).json({
             message: "Professional created and linked to health unit successfully",
             data: result,
@@ -49,7 +50,7 @@ export class ProfessionalController {
               "Local administrator is not linked to any health unit": 400,
               "Local administrator does not have access to the specified health unit": 403
             };
-            
+
             const statusCode = errorMessages[error.message] || 500;
             res.status(statusCode).json({
               message: error.message,
@@ -74,7 +75,7 @@ export class ProfessionalController {
 
           const useCase = container.get<CreateProfessionalByGeneralAdminUseCase>(TYPES.CreateProfessionalByGeneralAdminUseCase);
           const result = await useCase.execute(userProfile, userId, req.body);
-          
+
           res.status(201).json({
             message: "Professional created successfully",
             data: result,
@@ -86,7 +87,7 @@ export class ProfessionalController {
               "Health unit is required for non-general administrator profiles": 400,
               "Health unit not found": 404
             };
-            
+
             const statusCode = errorMessages[error.message] || 500;
             res.status(statusCode).json({
               message: error.message,
@@ -102,7 +103,7 @@ export class ProfessionalController {
       next(error);
     }
   }
-  
+
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const page = parseInt(req.params.page) || 1;
@@ -114,11 +115,11 @@ export class ProfessionalController {
           data: null,
           status_code: 403
         });
-      } else { 
+      } else {
         const useCase = container.get<GetProfessionalsUseCase>(TYPES.GetProfessionalsUseCase);
         const data = req.body
         const result = await useCase.execute(professionalId, data, page);
-        
+
         res.status(200).json({
           message: "Professionals retrieved successfully",
           data: result.data,
@@ -139,7 +140,7 @@ export class ProfessionalController {
     try {
       const cpf = req.params.cpf;
       const professionalId = req.user?.id;
-      
+
       if (!professionalId) {
         res.status(403).json({
           message: "Unauthenticated user",
@@ -148,10 +149,10 @@ export class ProfessionalController {
         });
         return;
       }
-      
+
       const useCase = container.get<GetProfessionalByCpfUseCase>(TYPES.GetProfessionalByCpfUseCase);
       const result = await useCase.execute(cpf, professionalId);
-      
+
       if (!result) {
         res.status(404).json({
           message: "Professional not found",
@@ -160,7 +161,7 @@ export class ProfessionalController {
         });
         return;
       }
-      
+
       res.status(200).json({
         message: "Professional retrieved successfully",
         data: result,
@@ -172,7 +173,7 @@ export class ProfessionalController {
           "Requesting professional not found": 404,
           "Professional does not have permission to access this professional data": 403
         };
-        
+
         const statusCode = errorMessages[error.message] || 500;
         res.status(statusCode).json({
           message: error.message,
@@ -189,7 +190,7 @@ export class ProfessionalController {
     try {
       const name = req.params.name;
       const professionalId = req.user?.id;
-      
+
       if (!professionalId) {
         res.status(403).json({
           message: "Unauthenticated user",
@@ -198,10 +199,10 @@ export class ProfessionalController {
         });
         return;
       }
-      
+
       const useCase = container.get<GetProfessionalsByNameUseCase>(TYPES.GetProfessionalByNameUseCase);
       const result = await useCase.execute(name, professionalId);
-      
+
       res.status(200).json({
         message: "Professionals retrieved successfully",
         data: result,
@@ -213,7 +214,7 @@ export class ProfessionalController {
           "Requesting professional not found": 404,
           "Professional does not have permission to access this professional data": 403
         };
-        
+
         const statusCode = errorMessages[error.message] || 500;
         res.status(statusCode).json({
           message: error.message,
@@ -225,12 +226,12 @@ export class ProfessionalController {
       next(error);
     }
   }
-  
+
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
       const professionalId = req.user?.id;
-      
+
       if (!professionalId) {
         res.status(403).json({
           message: "Unauthenticated user",
@@ -239,10 +240,10 @@ export class ProfessionalController {
         });
         return;
       }
-      
+
       const useCase = container.get<GetProfessionalByIdUseCase>(TYPES.GetProfessionalByIdUseCase);
       const result = await useCase.execute(id, professionalId);
-      
+
       if (!result) {
         res.status(404).json({
           message: "Professional not found",
@@ -263,7 +264,7 @@ export class ProfessionalController {
           "Requesting professional not found": 404,
           "Professional does not have permission to access this professional data": 403
         };
-        
+
         const statusCode = errorMessages[error.message] || 500;
         res.status(statusCode).json({
           message: error.message,
@@ -281,7 +282,7 @@ export class ProfessionalController {
       // Verifica o tipo de admin
       const userProfile = req.user?.profile;
       const adminId = req.user?.id;
-      
+
       if (userProfile !== ProfileType.GENERAL_ADMINISTRATOR && userProfile !== ProfileType.GENERAL_LOCAL_ADMINISTRATOR && userProfile !== ProfileType.LOCAL_ADMINISTRATOR) {
         res.status(403).json({
           message: "Only administrators can update professionals",
@@ -315,7 +316,7 @@ export class ProfessionalController {
         try {
           const useCase = container.get<UpdateProfessionalByLocalAdminUseCase>(TYPES.UpdateProfessionalByLocalAdminUseCase);
           const result = await useCase.execute(adminId, id, req.body);
-          
+
           res.status(200).json({
             message: "Professional updated successfully",
             data: result,
@@ -335,7 +336,7 @@ export class ProfessionalController {
               "Email already in use.": 400,
               "Invalid email.": 400
             };
-            
+
             const statusCode = errorMessages[error.message] || 500;
             res.status(statusCode).json({
               message: error.message,
@@ -351,7 +352,7 @@ export class ProfessionalController {
         try {
           const useCase = container.get<UpdateProfessionalByGeneralAdminUseCase>(TYPES.UpdateProfessionalByGeneralAdminUseCase);
           const result = await useCase.execute(userProfile, adminId, id, req.body);
-          
+
           res.status(200).json({
             message: "Professional updated successfully",
             data: result,
@@ -379,7 +380,7 @@ export class ProfessionalController {
               "Email already in use.": 400,
               "Invalid email.": 400
             };
-            
+
             const statusCode = errorMessages[error.message] || 500;
             res.status(statusCode).json({
               message: error.message,
@@ -432,7 +433,7 @@ export class ProfessionalController {
 
       const useCase = container.get<DeleteProfessionalUseCase>(TYPES.DeleteProfessionalUseCase);
       await useCase.execute(id, adminId, userProfile);
-      
+
       res.status(200).json({
         message: "Professional deleted successfully",
         data: { deleted: true },
