@@ -17,7 +17,7 @@ services:
     command: sh -c "npm run migrate && npm start"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ribeiro -d medcall"]
+      test: [ "CMD-SHELL", "pg_isready -U ribeiro -d medcall" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -26,17 +26,13 @@ services:
     image: postgres:16-alpine
     restart: always
     env_file:
-      - .env.prod
-    environment:
-      POSTGRES_USER: ribeiro
-      POSTGRES_PASSWORD: ribeiro123@medcall
-      POSTGRES_DB: medcall
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -45,6 +41,7 @@ services:
 
 volumes:
   postgres_data:
+
 
 networks:
   app-network:
