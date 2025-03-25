@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 
-const API_KEY = process.env.API_KEY;
 
-export const apiLeyMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const apiKeyMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const API_KEY = process.env.API_KEY;
     const apiKey = req.headers["api_key"];
 
     if (!apiKey) {

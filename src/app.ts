@@ -10,7 +10,7 @@ import professionalAddressRoutes from "./routes/professionalAddressRoutes";
 import healthUnitRoutes from "./routes/healthUnitRoutes";
 import cidRoutes from "./routes/cidRoutes";
 import cityRoutes from "./routes/cityRoutes";
-import { apiLeyMiddleware } from "./middleware/apiLeyMiddleware";
+import { apiKeyMiddleware } from "./middleware/apiKeyMiddleware";
 import { authMiddleware } from "./middleware/authMiddleware";
 import { roleMiddleware } from "./middleware/roleMiddleware";
 import { authorizeRoles } from "./middleware/authorizationMiddleware";
@@ -22,10 +22,10 @@ app.use(cors());
 app.use(express.json());
 
 // Rotas públicas - apenas precisa da api key
-app.use("/api/auth", apiLeyMiddleware, authRoutes);
+app.use("/api/auth", apiKeyMiddleware, authRoutes);
 
 // Middleware global para verificar api key e autenticação em todas as rotas
-app.use("/api", apiLeyMiddleware);
+app.use("/api", apiKeyMiddleware);
 app.use("/api", authMiddleware);
 
 // Rotas protegidas - precisa de autenticação
@@ -42,7 +42,7 @@ app.use("/api/reports", authorizeRoles([ProfileType.GENERAL_ADMINISTRATOR, Profi
 
 // Middleware global de tratamento de erros
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err); 
+  console.error(err);
   res.status(500).json({ error: err.message });
 });
 
