@@ -7,7 +7,7 @@ import { ProfileType } from "../../src/constants/profilesTypes"
 import { AuthenticationBuilder } from "./AuthenticationBuilder"
 import { config } from "../utils/config"
 
-type CredentialsType = { cpf: string, password: string }
+type CredentialsType = { email: string, cpf: string, password: string }
 
 export class ProfessionalBuilder {
 
@@ -47,7 +47,8 @@ export class ProfessionalBuilder {
         if (response.status == 201) {
             return {
                 cpf: this.cpf,
-                password: this.password
+                password: this.password,
+                email: this.email,
             }
         }
         console.log({
