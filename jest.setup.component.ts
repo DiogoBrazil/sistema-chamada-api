@@ -83,4 +83,4 @@ function setDatabaseUrlEnv(databaseUrl: string): void {
 afterAll(async () => {
     const dbContainer = DbContainer.getInstance()
     await dbContainer.stop()
-})
+}, 1000 * 60 * 5) // 5 minutes

@@ -7,7 +7,7 @@ import { ProfileType } from "../../src/constants/profilesTypes"
 import { AuthenticationBuilder } from "./AuthenticationBuilder"
 import { config } from "../utils/config"
 
-type CredentialsType = { email: string, cpf: string, password: string }
+type CredentialsType = { id: number, email: string, cpf: string, password: string }
 
 export class ProfessionalBuilder {
 
@@ -46,6 +46,7 @@ export class ProfessionalBuilder {
 
         if (response.status == 201) {
             return {
+                id: response.body.data.id,
                 cpf: this.cpf,
                 password: this.password,
                 email: this.email,

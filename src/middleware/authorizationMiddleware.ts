@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { ProfileType, ADMIN_PROFILES } from '../constants/profilesTypes';
-
-const prisma = new PrismaClient();
+import { getPrismaClient } from '../infra/prismaClient';
 
 // Verifica se o usuário tem autorização baseado em seu perfil
 export function authorizeRoles(allowedRoles: ProfileType[]) {
@@ -14,9 +12,9 @@ export function authorizeRoles(allowedRoles: ProfileType[]) {
         status_code: 401
       });
     }
-    
+
     const userProfile = req.user.profile as ProfileType;
-    
+
     if (!allowedRoles.includes(userProfile)) {
       return res.status(403).json({
         message: 'Insufficient permissions for this operation',
@@ -53,7 +51,7 @@ export function authorizeHealthUnit(healthUnitIdExtractor: (req: Request) => num
       // Verifica acesso com base no perfil
       if (userProfile === ProfileType.GENERAL_LOCAL_ADMINISTRATOR) {
         // Verifica se a unidade pertence à cidade do administrador
-        const professional = await prisma.professional.findUnique({
+        const professional = await getPrismaClient().professional.findUnique({
           where: { id: userId },
           include: { city: { include: { healthUnits: true } } }
         });
@@ -77,7 +75,7 @@ export function authorizeHealthUnit(healthUnitIdExtractor: (req: Request) => num
       } else {
         // Para LOCAL_ADMINISTRATOR e demais perfis
         // Verificar se o profissional está vinculado à unidade
-        const professional = await prisma.professional.findUnique({
+        const professional = await getPrismaClient().professional.findUnique({
           where: { id: userId },
           include: { healthUnit: true }
         });
@@ -135,7 +133,7 @@ export function authorizeCity(cityIdExtractor: (req: Request) => number) {
     try {
       if (userProfile === ProfileType.GENERAL_LOCAL_ADMINISTRATOR) {
         // Verificar se o administrador pertence à cidade
-        const professional = await prisma.professional.findUnique({
+        const professional = await getPrismaClient().professional.findUnique({
           where: { id: userId }
         });
 
@@ -148,9 +146,9 @@ export function authorizeCity(cityIdExtractor: (req: Request) => number) {
         }
       } else {
         // Para outros perfis, verificar se pertencem a uma unidade na cidade
-        const professional = await prisma.professional.findUnique({
+        const professional = await getPrismaClient().professional.findUnique({
           where: { id: userId },
-          include: { 
+          include: {
             healthUnit: {
               include: { city: true }
             }
@@ -199,7 +197,7 @@ export function authorizeProfessionalManagement() {
     }
 
     const userProfile = req.user.profile as ProfileType;
-    
+
     // Somente perfis de administrador podem gerenciar profissionais
     if (!ADMIN_PROFILES.includes(userProfile)) {
       return res.status(403).json({
@@ -238,13 +236,14 @@ export function canManageProfessional(professionalIdExtractor: (req: Request) =>
       return next();
     }
 
+    //TODO: Código abaixo parece ter lógica repetida.
     try {
       // Buscar o profissional alvo
-      const targetProfessional = await prisma.professional.findUnique({
+      const targetProfessional = await getPrismaClient().professional.findUnique({
         where: { id: targetProfessionalId },
-        include: { 
+        include: {
           healthUnit: { include: { city: true } },
-          city: true 
+          city: true
         }
       });
 
@@ -258,7 +257,7 @@ export function canManageProfessional(professionalIdExtractor: (req: Request) =>
 
       // GENERAL_LOCAL_ADMINISTRATOR pode gerenciar profissionais em sua cidade
       if (userProfile === ProfileType.GENERAL_LOCAL_ADMINISTRATOR) {
-        const admin = await prisma.professional.findUnique({
+        const admin = await getPrismaClient().professional.findUnique({
           where: { id: userId },
           include: { city: true }
         });
@@ -272,8 +271,8 @@ export function canManageProfessional(professionalIdExtractor: (req: Request) =>
         }
 
         // Verifica se o profissional está na mesma cidade
-        const isInSameCity = targetProfessional.cityId === admin.cityId || 
-                            targetProfessional.healthUnit.some(unit => unit.cityId === admin.cityId);
+        const isInSameCity = targetProfessional.cityId === admin.cityId ||
+          targetProfessional.healthUnit.some(unit => unit.cityId === admin.cityId);
 
         if (!isInSameCity) {
           return res.status(403).json({
@@ -282,10 +281,10 @@ export function canManageProfessional(professionalIdExtractor: (req: Request) =>
             status_code: 403
           });
         }
-      } 
+      }
       // LOCAL_ADMINISTRATOR pode gerenciar profissionais em sua unidade
       else if (userProfile === ProfileType.LOCAL_ADMINISTRATOR) {
-        const admin = await prisma.professional.findUnique({
+        const admin = await getPrismaClient().professional.findUnique({
           where: { id: userId },
           include: { healthUnit: true }
         });
@@ -299,7 +298,7 @@ export function canManageProfessional(professionalIdExtractor: (req: Request) =>
         }
 
         const adminHealthUnitIds = admin.healthUnit.map(unit => unit.id);
-        const hasCommonHealthUnit = targetProfessional.healthUnit.some(unit => 
+        const hasCommonHealthUnit = targetProfessional.healthUnit.some(unit =>
           adminHealthUnitIds.includes(unit.id)
         );
 
